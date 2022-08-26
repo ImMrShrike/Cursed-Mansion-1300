@@ -1,7 +1,6 @@
 // See: https://mlxxxp.github.io/documents/Arduino/libraries/Arduboy2/Doxygen/html/
 #include <Arduboy2.h>
 #include <Tinyfont.h>
-//#include <Sprites.h>
 
 constexpr uint8_t down[] PROGMEM
 {
@@ -50,30 +49,6 @@ constexpr uint8_t completeCup[] PROGMEM
   // Frame 0
   0x0F, 0x52, 0x7F, 0x7F, 0x52, 0x0F,
 };
-
-/*constexpr uint8_t completeCup2[] PROGMEM
-  {
-  // Width, Height
-  6, 7,
-  // Frame 0
-  0x0F, 0x52, 0x71, 0x71, 0x52, 0x0F,
-  };
-
-  constexpr uint8_t completeCup3[] PROGMEM
-  {
-  // Width, Height
-  6, 7,
-  // Frame 0
-  0x0F, 0x52, 0x6D, 0x6D, 0x52, 0x0F,
-  };
-
-  constexpr uint8_t completeCup4[] PROGMEM
-  {
-  // Width, Height
-  6, 7,
-  // Frame 0
-  0x0F, 0x52, 0x61, 0x61, 0x52, 0x0F,
-  };*/
 
 constexpr uint8_t ghost[] PROGMEM
 {
@@ -165,11 +140,50 @@ constexpr uint8_t scepter[] PROGMEM
   0x09, 0x06, 0x16, 0x09, 0x14, 0x20, 0x40, 0x80,
 };
 
+constexpr uint8_t cupIcon[] PROGMEM
+{
+  // Width, Height
+  3, 7,
+
+  // Frame 0
+  0x0F, 0x52, 0x23,
+
+  // Frame 1
+  0x52, 0x7F, 0x52,
+
+  // Frame 2
+  0x23, 0x52, 0x0F,
+};
+
 struct Mob {
   Rect hitBox;
   int floorNumber;
 };
 
+struct Item {
+  int floorNumber;
+  int x;
+  int y;
+  char value;
+};
+
+//53 should be the number of all items placeable including doors, stairs, exit, scepter, key and urn
+Item items[53];
+
+void initializeItemArray(){
+  for(int i=0;i<53;i++){
+    items[i].value='X';
+  }
+}
+
+int getFirstEmptyItemSpot(){
+  for(int i=0;i<53;i++){
+    if(items[i].value=='X'){
+      return i;
+    }
+  }
+  return -1;
+}
 
 Arduboy2 arduboy;
 Tinyfont tinyfont = Tinyfont(arduboy.sBuffer, Arduboy2::width(), Arduboy2::height());
@@ -195,7 +209,7 @@ Mob player;
 //l - locked door
 //S - Scepter
 
-char level[4][16][11] = {{
+char level[16][11] = { 
     {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'},
     {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
     {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
@@ -212,73 +226,37 @@ char level[4][16][11] = {{
     {'w', '0', '0', '0', 'p', 'p', '0', '0', '0', 'w', 'w'},
     {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
     {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'}
-  }, {
-    {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'p', 'p', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 'p', 'w', 'w', 'w', 'w', 'p', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'s', '0', '0', '0', 'p', 'p', '0', '0', '0', 's', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 'p', 'w', 'w', 'w', 'w', 'p', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'p', 'p', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'}
-  }, {
-    {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'p', 'p', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 'p', 'w', 'w', 'w', 'w', 'p', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'s', '0', '0', '0', 'p', 'p', '0', '0', '0', 's', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 'p', 'w', 'w', 'w', 'w', 'p', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'p', 'p', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'}
-  }, {
-    {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'p', 'p', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 'p', 'w', 'w', 'w', 'w', 'p', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'s', '0', '0', '0', 'p', 'p', '0', '0', '0', 's', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 'p', 'w', 'w', 'w', 'w', 'p', 'w', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'p', 'p', '0', '0', '0', 'w', 'w'},
-    {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
-    {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'}
-  }
 };
 
 Rect room[6];
+
+char getSpotValue(int i, int j, int floorNumber){
+  for(int k = 0;k<53;k++){
+    if(items[k].y==i && items[k].x==j && items[k].floorNumber==0){
+      return items[k].value;
+    }
+  }
+  return 'X';
+}
 
 void generateExit() {
   int loop = 1;
   while (loop) {
     int i = random(0, 16);
     int j = random(0, 10);
-    if (level[0][i][j] == 's') {
-      level[0][i][j] = 'e';
+    if (level[i][j] == 's') {
+      Item exitDoor;
+      exitDoor.y=i;
+      exitDoor.x=j;
+      exitDoor.floorNumber = 0;
+      exitDoor.value = 'e';
+      items[getFirstEmptyItemSpot()]=exitDoor;
       loop = 0;
     }
   }
 }
+
+
 
 void generateScepter() {
   generateItem('S');
@@ -300,34 +278,45 @@ void generateKey() {
   generateItem('K');
 }
 
-void generateItem(char item) {
+void generateItem(char itemValue) {
   while (1) {
     int i = random(0, 16);
     int j = random(0, 10);
     int floorNumber = random(0, 4);
-    if (level[floorNumber][i][j] == '0') {
-      level[floorNumber][i][j] = item;
+    if (level[i][j] == '0' && getSpotValue(i,j,floorNumber)=='X') {
+      Item item;
+      item.y=i;
+      item.x=j;
+      item.floorNumber = floorNumber;
+      item.value = itemValue;
+      items[getFirstEmptyItemSpot()]=item;
       return;
     }
   }
 }
 
 void generateStairs() {
-  for (int flr = 0; flr < 4; flr++) {
+  for (int flr = 0; flr < 3; flr++) {
     //generate stairs up (up to three)
     int loop = random(1, 3); //random(1,4);
-
-    //no stairs up for upper room
-    if (flr == 3) {
-      loop = 0;
-    }
 
     while (loop) {
       int i = random(0, 16);
       int j = random(0, 10);
-      if (level[flr][i][j] == 's') {
-        level[flr][i][j] = 'u';
-        level[flr + 1][i][j] = 'd';
+      if (level[i][j] == 's') {
+        Item doorUp;
+        doorUp.y=i;
+        doorUp.x=j;
+        doorUp.floorNumber = flr;
+        doorUp.value = 'u';
+        items[getFirstEmptyItemSpot()]=doorUp;
+        
+        Item doorDown;
+        doorDown.y=i;
+        doorDown.x=j;
+        doorDown.floorNumber = flr+1;
+        doorDown.value = 'd';
+        items[getFirstEmptyItemSpot()]=doorDown;
         loop--;
       }
     }
@@ -368,9 +357,8 @@ int playerAndEnemyInSameRoom() {
 void setup() {
   arduboy.begin();
   arduboy.initRandomSeed();
+  initializeItemArray();
   generateHouse(0, 0);
-  //arduboy.setFrameRate(30);
-
   // initialize things here
 
   player.hitBox.x = 26;
@@ -458,19 +446,19 @@ int checkCollision(int direction) {
       obstacle.y = i * 12;
       obstacle.width = 12;
       obstacle.height = 12;
-      if (level[player.floorNumber][i][j] == 'w') {
+      if (level[i][j] == 'w') {
         if (arduboy.collide(playerColl, obstacle)) {
           return 1;
         }
       }
-      else if (level[player.floorNumber][i][j] == 'u') {
+      else if (getSpotValue(i,j,player.floorNumber) == 'u') {
         if (arduboy.collide(playerColl, obstacle)) {
           if (player.floorNumber < 3) {
             player.floorNumber++;
           }
         }
       }
-      else if (level[player.floorNumber][i][j] == 'd') {
+      else if (getSpotValue(i,j,player.floorNumber) == 'd') {
         if (arduboy.collide(playerColl, obstacle)) {
           if (player.floorNumber > 0) {
             player.floorNumber--;
@@ -508,20 +496,20 @@ void loop() {
   for (int i = 0; i < 16; i++) {
     for (int j = 0; j < 10; j++) {
       if ( player.hitBox.y + viewportY > (i * 12) - 64 && player.hitBox.y + viewportY < (i * 12) + 70) {
-        if (level[player.floorNumber][i][j] == 'w') {
+        if (level[i][j] == 'w') {
           //Sprites::drawOverwrite(12*j, 12*i-viewportY, blackBlock,0);
           arduboy.drawRect(12 * j, 12 * i - viewportY, 12, 12, WHITE);
         }
-        else if (level[player.floorNumber][i][j] == 'e') {
+        else if (getSpotValue(i,j,player.floorNumber) == 'e') {
           Sprites::drawOverwrite(12 * j, 12 * i - viewportY, exitBlock, 0);
         }
-        else if (level[player.floorNumber][i][j] == 'u') {
+        else if (getSpotValue(i,j,player.floorNumber) == 'u') {
           Sprites::drawOverwrite(12 * j, 12 * i - viewportY, up, 0);
         }
-        else if (level[player.floorNumber][i][j] == 'd') {
+        else if (getSpotValue(i,j,player.floorNumber) == 'd') {
           Sprites::drawOverwrite(12 * j, 12 * i - viewportY, down, 0);
         }
-        else if (level[player.floorNumber][i][j] == 'S' && toggleMatch) {
+        else if (getSpotValue(i,j,player.floorNumber) == 'S' && toggleMatch) {
           Rect scepterHitBox;
           scepterHitBox.x = 12 * j;
           scepterHitBox.y = 12 * i - viewportY;
@@ -537,11 +525,11 @@ void loop() {
             Sprites::drawSelfMasked(12 * j, 12 * i - viewportY, scepter, 0);
           }
           if (arduboy.collide(player.hitBox, scepterHitBox)) {
-            level[player.floorNumber][i][j] = '0';
+           // getSpotValue(i,j,player.floorNumber) = '0';
           }
           //arduboy.drawRect(player.hitBox.x-3,player.hitBox.y-6,15,15,WHITE);
         }
-        else if (level[player.floorNumber][i][j] == 'R' && toggleMatch) {
+        else if (getSpotValue(i,j,player.floorNumber) == 'R' && toggleMatch) {
           Rect urnHitBox;
           urnHitBox.x = 12 * j;
           urnHitBox.y = 12 * i - viewportY;
@@ -557,7 +545,7 @@ void loop() {
             Sprites::drawSelfMasked(12 * j, 12 * i - viewportY, brokenUrnRight, 0);
           }
         }
-        else if (level[player.floorNumber][i][j] == 'L' && toggleMatch) {
+        else if (getSpotValue(i,j,player.floorNumber) == 'L' && toggleMatch) {
           Rect urnHitBox;
           urnHitBox.x = 12 * j;
           urnHitBox.y = 12 * i - viewportY;
@@ -573,7 +561,7 @@ void loop() {
             Sprites::drawSelfMasked(12 * j, 12 * i - viewportY, brokenUrnLeft, 0);
           }
         }
-        else if (level[player.floorNumber][i][j] == 'C' && toggleMatch) {
+        else if (getSpotValue(i,j,player.floorNumber) == 'C' && toggleMatch) {
           Rect urnHitBox;
           urnHitBox.x = 12 * j;
           urnHitBox.y = 12 * i - viewportY;
@@ -589,7 +577,7 @@ void loop() {
             Sprites::drawSelfMasked(12 * j, 12 * i - viewportY, brokenUrnCenter, 0);
           }
         }
-        else if (level[player.floorNumber][i][j] == 'K' && toggleMatch) {
+        else if (getSpotValue(i,j,player.floorNumber) == 'K' && toggleMatch) {
           Rect keyHitBox;
           keyHitBox.x = 12 * j;
           keyHitBox.y = 12 * i - viewportY;
@@ -679,11 +667,16 @@ void loop() {
   tinyfont.print(lives);
   tinyfont.setCursor(122, 10);
   tinyfont.print(player.floorNumber + 1);
+  /*tinyfont.setCursor(122, 50);
+  tinyfont.print(items.getCount());*/
 
   if (itemInUse == 'C') {
     Sprites::drawOverwrite(122, 20, completeCup, 0);
   } else if (itemInUse == 'S') {
     Sprites::drawOverwrite(122, 20, completeCup, 0);
+  }
+  else if (itemInUse == 'M') {
+    Sprites::drawOverwrite(122, 20, cupIcon, 0);
   }
 
 
@@ -693,7 +686,6 @@ void loop() {
     twentyFrames = (twentyFrames + 1) % 2;
 
   }
-
 
   /*arduboy.print("player.hitBox.y");
     arduboy.print(player.hitBox.y);
