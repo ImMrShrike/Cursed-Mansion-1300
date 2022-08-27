@@ -209,7 +209,7 @@ Mob player;
 //l - locked door
 //S - Scepter
 
-char level[16][11] = { 
+constexpr char level[16][11] PROGMEM = { 
     {'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w'},
     {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
     {'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w'},
