@@ -1,10 +1,11 @@
 // See: https://mlxxxp.github.io/documents/Arduino/libraries/Arduboy2/Doxygen/html/
 #include <Arduboy2.h>
 #include <Tinyfont.h>
+#include <time.h>
 #include "constants.h"
 
 
-
+ 
 struct Mob {
   Rect hitBox;
   int floorNumber;
@@ -13,6 +14,7 @@ struct Mob {
   int roomCenterY;
   int direction;
   int previousDirection;
+  int mobType; // 0 - spider / 1 - ghost / 2 - bat
 };
 
 struct Item {
@@ -21,6 +23,11 @@ struct Item {
   int y;
   char value;
   char position;
+};
+
+struct Room{
+  int floorNumber;
+  int roomNumber;
 };
 
 
@@ -53,6 +60,8 @@ int twentyFrames = 0;
 char itemInUse = "X";
 int touched = 0;
 int gameOver= 0;
+int timer = 20;
+unsigned long now;
 
 void printItemInUse(){
   if (itemInUse == 'S') {
@@ -85,8 +94,13 @@ void printItemInUse(){
  
 }
 
-Mob spider;
 Mob player;
+
+Mob spider;
+Mob ghost;
+Mob bat1;
+Mob bat2;
+Mob bat3;
 
 //objects code:
 // 0 - empty space
@@ -138,6 +152,32 @@ char getSpotValue(int i, int j, int floorNumber){
     }
   }
   return 'X';
+}
+
+int areRoomsAdjacent(int room1, int room2){
+  if (room1==0 && (room2 ==1 || room2==2)){
+    return 1;
+  }
+  if (room1==1 && (room2 ==0 || room2==3)){
+    return 1;
+  }
+  if (room1==2 && (room2 ==0 || room2==3 || room2==4)){
+    return 1;
+  }
+  if (room1==3 && (room2 ==1 || room2==2 || room2==5)){
+    return 1;
+  }
+  if (room1==4 && (room2 ==2 || room2==5)){
+    return 1;
+  }
+  if (room1==5 && (room2 ==3 || room2==4)){
+    return 1;
+  }
+  return 0;
+}
+
+void placeItemInRandomAccessibleRoom(char item, int startingRoom, int startingFloor){
+  
 }
 
 void setSpotValue(int i, int j, int floorNumber,char value){
@@ -291,7 +331,6 @@ int playerAndEnemyInSameRoom(Mob mob) {
   if (mob.floorNumber == player.floorNumber) {
     for (int i = 0; i < 6; i++) {
       if (arduboy.collide(room[i], mob.hitBox) && arduboy.collide(room[i], pl)) {
-        toggleMatch=0;
         return 1;
       }
     }
@@ -352,6 +391,51 @@ void setup() {
   spider.floorNumber = random(0, 4);
   spider.roomNumber = mobRoomNumber(spider);
   spider.direction = random(0, 4);
+  spider.mobType=0;
+  
+  /*ghost.hitBox.x = random(0, 2) == 0 ? 26 : 86;
+  ghost.hitBox.y = random(12, 170);
+  ghost.hitBox.width = 8;
+  ghost.hitBox.height = 7;
+  ghost.roomCenterY=0;
+  ghost.roomCenterX=0;
+  ghost.floorNumber = random(0, 4);
+  ghost.roomNumber = mobRoomNumber(ghost);
+  ghost.direction = random(0, 4);
+  ghost.mobType=1;
+  
+  bat1.hitBox.x = random(0, 2) == 0 ? 26 : 86;
+  bat1.hitBox.y = random(12, 170);
+  bat1.hitBox.width = 8;
+  bat1.hitBox.height = 6;
+  bat1.roomCenterY=0;
+  bat1.roomCenterX=0;
+  bat1.floorNumber = random(0, 4);
+  bat1.roomNumber = mobRoomNumber(bat1);
+  bat1.direction = random(0, 4);
+  bat1.mobType=2;
+  
+  bat2.hitBox.x = random(0, 2) == 0 ? 26 : 86;
+  bat2.hitBox.y = random(12, 170);
+  bat2.hitBox.width = 8;
+  bat2.hitBox.height = 6;
+  bat2.roomCenterY=0;
+  bat2.roomCenterX=0;
+  bat2.floorNumber = random(0, 4);
+  bat2.roomNumber = mobRoomNumber(bat2);
+  bat2.direction = random(0, 4);
+  bat2.mobType=2;
+  
+  bat3.hitBox.x = random(0, 2) == 0 ? 26 : 86;
+  bat3.hitBox.y = random(12, 170);
+  bat3.hitBox.width = 8;
+  bat3.hitBox.height = 6;
+  bat3.roomCenterY=0;
+  bat3.roomCenterX=0;
+  bat3.floorNumber = random(0, 4);
+  bat3.roomNumber = mobRoomNumber(bat2);
+  bat3.direction = random(0, 4);
+  bat3.mobType=2;*/
 
   room[0].x = 0;
   room[0].y = 0;
@@ -532,6 +616,7 @@ void loop() {
       if ( player.hitBox.y + viewportY > (i * 12) - 64 && player.hitBox.y + viewportY < (i * 12) + 70) {
         if (level[i][j] == 'w') {
           //Sprites::drawOverwrite(12*j, 12*i-viewportY, blackBlock,0);
+          //Sprites::drawOverwrite(12*j, 12*i-viewportY, whiteBlock,0);
           arduboy.drawRect(12 * j, 12 * i - viewportY, 12, 12, WHITE);
         }
         else if (getSpotValue(i,j,player.floorNumber) == 'e') {
@@ -801,8 +886,9 @@ void loop() {
     arduboy.fillRect(player.hitBox.x + 6, player.hitBox.y + 1, 1, 1, BLACK);
   }
 
-  if (arduboy.justPressed(B_BUTTON)) {
-    toggleMatch = (toggleMatch + 1) % 2;
+  if (arduboy.justPressed(B_BUTTON) && !toggleMatch) {
+    toggleMatch = 1;
+    now=millis();
   }
 
   // game goes here
@@ -820,19 +906,42 @@ void loop() {
   }
 
   moveMob(&spider);
+ /* moveMob(&ghost);
+  moveMob(&bat1);
+  moveMob(&bat2);
+  moveMob(&bat3);*/
   printMobs(spider);
+  /*printMobs(ghost);
+  printMobs(bat1);
+  printMobs(bat2);
+  printMobs(bat3);*/
   
+  char d = spider.direction;
+
   
   tinyfont.setCursor(80, 24);
-  tinyfont.print(spider.direction);
+  if(d==0){
+    tinyfont.print('r');  
+  }
+  else if(d==1){
+    tinyfont.print('l');  
+  }
+  else if(d==2){
+    tinyfont.print('d');  
+  }
+  else if(d==3){
+    tinyfont.print('u');  
+  }
+  
   tinyfont.setCursor(80, 32);
   tinyfont.print(spider.floorNumber+1);
   tinyfont.setCursor(80, 40);
   tinyfont.print(mobRoomNumber(spider));
   tinyfont.setCursor(80, 48);
-  tinyfont.print(spider.hitBox.x);
+  tinyfont.print(now);
+  /*tinyfont.print(spider.hitBox.x);
   tinyfont.setCursor(80, 56);
-  tinyfont.print(spider.hitBox.y);
+  tinyfont.print(spider.hitBox.y);*/
  
   
   arduboy.display();
@@ -848,7 +957,15 @@ int mobRoomNumber(Mob mob){
 
 void printMobs(Mob mob){
   if (player.floorNumber == mob.floorNumber) {
-    Sprites::drawSelfMasked(mob.hitBox.x, mob.hitBox.y - viewportY, spiderSprite, twentyFrames);
+    if(mob.mobType==0){
+      Sprites::drawSelfMasked(mob.hitBox.x, mob.hitBox.y - viewportY, spiderSprite, twentyFrames);  
+    }
+    else if (mob.mobType==1){
+      Sprites::drawSelfMasked(mob.hitBox.x, mob.hitBox.y - viewportY, ghostSprite, twentyFrames);  
+    }
+    else if (mob.mobType==2){
+      Sprites::drawSelfMasked(mob.hitBox.x, mob.hitBox.y - viewportY, batSprite, twentyFrames);  
+    }
   }
 }
 
@@ -873,12 +990,26 @@ void getNextDirection(Mob *mob){
   while(flag){
     if((mob->roomNumber==0 && rnd == 1) || (mob->roomNumber==1 && rnd == 0) 
     || (mob->roomNumber==4 && rnd == 1) || (mob->roomNumber==5 && rnd == 0) 
-    || (mob->roomNumber==0 && rnd == 3 && getSpotValue(0,2,mob->floorNumber) == 'X')
-    || (mob->roomNumber==1 && rnd == 3 && getSpotValue(0,7,mob->floorNumber) == 'X')
-    || (mob->roomNumber==2 && rnd == 1 && getSpotValue(7,0,mob->floorNumber) == 'X')
-    || (mob->roomNumber==3 && rnd == 0 && getSpotValue(7,9,mob->floorNumber) == 'X')
-    || (mob->roomNumber==4 && rnd == 2 && getSpotValue(15,2,mob->floorNumber) == 'X')
-    || (mob->roomNumber==5 && rnd == 2 && getSpotValue(15,7,mob->floorNumber) == 'X')){
+    || (mob->roomNumber==0 && rnd == 3 && getSpotValue(0,2,mob->floorNumber) == ('X' || 'e'))
+    || (mob->roomNumber==1 && rnd == 3 && getSpotValue(0,7,mob->floorNumber) == ('X' || 'e'))
+    || (mob->roomNumber==2 && rnd == 1 && getSpotValue(7,0,mob->floorNumber) == ('X' || 'e'))
+    || (mob->roomNumber==3 && rnd == 0 && getSpotValue(7,9,mob->floorNumber) == ('X' || 'e'))
+    || (mob->roomNumber==4 && rnd == 2 && getSpotValue(15,2,mob->floorNumber) == ('X' || 'e'))
+    || (mob->roomNumber==5 && rnd == 2 && getSpotValue(15,7,mob->floorNumber) == ('X' || 'e'))
+    || (mob->roomNumber==0 && rnd == 0 && getSpotValue(3,4,mob->floorNumber) == 'l')
+    || (mob->roomNumber==1 && rnd == 1 && getSpotValue(3,5,mob->floorNumber) == 'l')
+    || (mob->roomNumber==0 && rnd == 2 && getSpotValue(5,2,mob->floorNumber) == 'l')
+    || (mob->roomNumber==2 && rnd == 3 && getSpotValue(5,2,mob->floorNumber) == 'l')
+    || (mob->roomNumber==1 && rnd == 2 && getSpotValue(5,7,mob->floorNumber) == 'l')
+    || (mob->roomNumber==3 && rnd == 3 && getSpotValue(5,7,mob->floorNumber) == 'l')
+    || (mob->roomNumber==2 && rnd == 0 && getSpotValue(7,4,mob->floorNumber) == 'l')
+    || (mob->roomNumber==3 && rnd == 1 && getSpotValue(7,5,mob->floorNumber) == 'l')
+    || (mob->roomNumber==2 && rnd == 2 && getSpotValue(10,2,mob->floorNumber) == 'l')
+    || (mob->roomNumber==4 && rnd == 3 && getSpotValue(10,2,mob->floorNumber) == 'l')
+    || (mob->roomNumber==3 && rnd == 2 && getSpotValue(10,7,mob->floorNumber) == 'l')
+    || (mob->roomNumber==5 && rnd == 3 && getSpotValue(10,7,mob->floorNumber) == 'l')
+    || (mob->roomNumber==4 && rnd == 0 && getSpotValue(13,4,mob->floorNumber) == 'l')
+    || (mob->roomNumber==5 && rnd == 1 && getSpotValue(13,5,mob->floorNumber) == 'l')){
       rnd = random(0,4);
     }
     else{
@@ -891,25 +1022,31 @@ void getNextDirection(Mob *mob){
 void moveMob(Mob *mob){
   int mobRoom = mobRoomNumber(*mob);
   
-  if (playerAndEnemyInSameRoom(*mob) && itemInUse!='S') {
-    mob->roomCenterX=0;
-    mob->roomCenterY=0;
+  if (playerAndEnemyInSameRoom(*mob)) {
+    toggleMatch=0;
     
-    if (arduboy.everyXFrames(3)) {
-      if (player.hitBox.x > mob->hitBox.x) {
-        mob->hitBox.x++;
-      }
-      else if (player.hitBox.x < mob->hitBox.x) {
-        mob->hitBox.x--;
-      }
+    
+    if(itemInUse!='S'){
+      mob->roomCenterX=0;
+       mob->roomCenterY=0;
+    
+      if (arduboy.everyXFrames(3)) {
+        if (player.hitBox.x > mob->hitBox.x) {
+          mob->hitBox.x++;
+        }
+        else if (player.hitBox.x < mob->hitBox.x) {
+          mob->hitBox.x--;
+        }
 
-      if (player.hitBox.y + viewportY - 3 > mob->hitBox.y) {
-        mob->hitBox.y ++;
-      }
-      else if (player.hitBox.y + viewportY - 3 < mob->hitBox.y) {
-        mob->hitBox.y--;
+        if (player.hitBox.y + viewportY - 3 > mob->hitBox.y) {
+          mob->hitBox.y ++;
+        }
+        else if (player.hitBox.y + viewportY - 3 < mob->hitBox.y) {
+          mob->hitBox.y--;
+        }
       }
     }
+    
   }
   else if(mob->roomCenterX==1 && mob->roomCenterY==1){
     
@@ -918,10 +1055,10 @@ void moveMob(Mob *mob){
     goToDirection(mob);
 
     if(mob->hitBox.x<=0 || mob->hitBox.x>=110 || mob->hitBox.y<=0 || mob->hitBox.y>=184){
-      if (getSpotValue(mob->hitBox.y/12,mob->hitBox.x/12,spider.floorNumber) == 'u') {
+      if (getSpotValue(mob->hitBox.y/12,mob->hitBox.x/12,mob->floorNumber) == 'u') {
                 mob->floorNumber++;
         }
-        else if (getSpotValue(mob->hitBox.y/12,mob->hitBox.x/12,spider.floorNumber) == 'd') {
+        else if (getSpotValue(mob->hitBox.y/12,mob->hitBox.x/12,mob->floorNumber) == 'd') {
                 mob->floorNumber--;
         }
       mob->roomCenterX=0;
