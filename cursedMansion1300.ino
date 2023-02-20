@@ -2,6 +2,7 @@
 #include <Arduboy2.h>
 #include <Tinyfont.h>
 #include <time.h>
+#include <ArduboyTones.h>
 #include "constants.h"
 
 
@@ -26,6 +27,7 @@ struct Player {
   int lives;
   int faint;
   int cooldown;
+  char itemInUse;
 };
 
 
@@ -62,12 +64,13 @@ int getFirstEmptyItemSpot() {
 }
 
 Arduboy2 arduboy;
+ArduboyTones sound(arduboy.audio.enabled);
 Tinyfont tinyfont = Tinyfont(arduboy.sBuffer, Arduboy2::width(), Arduboy2::height());
 
 
 int toggleMatch = 0;
 int twentyFrames = 0;
-char itemInUse = "X";
+
 int touched = 0;
 int matchesUsed = 0;
 unsigned long now = 0;
@@ -76,25 +79,26 @@ unsigned long endTime = 0;
 int lights = 1;
 int numberOfBats = 1;
 int gamePhase = 0;
+int color = 0;
 
-void printItemInUse() {
-  if (itemInUse == 'S') {
+void printItemInUse(Player player) {
+  if (player.itemInUse == 'S') {
     Sprites::drawOverwrite(122, 30, scepterIcon, 0);
-  } else if (itemInUse == 'C') {
+  } else if (player.itemInUse == 'C') {
     Sprites::drawOverwrite(122, 30, urnIcon, 0);
-  } else if (itemInUse == 'R') {
+  } else if (player.itemInUse == 'R') {
     Sprites::drawOverwrite(122, 30, urnIcon, 1);
-  } else if (itemInUse == 'L') {
+  } else if (player.itemInUse == 'L') {
     Sprites::drawOverwrite(122, 30, urnIcon, 2);
-  } else if (itemInUse == 'M') {
+  } else if (player.itemInUse == 'M') {
     Sprites::drawOverwrite(122, 30, urnIcon, 3);
-  } else if (itemInUse == 'J') {
+  } else if (player.itemInUse == 'J') {
     Sprites::drawOverwrite(122, 30, urnIcon, 4);
-  } else if (itemInUse == 'I') {
+  } else if (player.itemInUse == 'I') {
     Sprites::drawOverwrite(122, 30, urnIcon, 5);
-  } else if (itemInUse == 'H') {
+  } else if (player.itemInUse == 'H') {
     Sprites::drawOverwrite(122, 30, urnIcon, 6);
-  } else if (itemInUse == 'K') {
+  } else if (player.itemInUse == 'K') {
     Sprites::drawOverwrite(122, 30, keyIcon, 0);
   }
 }
@@ -339,6 +343,7 @@ void placeItemInEmptySpot(int i, int j, int floorNumber, char item, int itemWidt
 
 void generateHouse(int lights, int numberOfBats) {
 
+  initializeItemArray();
   generateExit();
   generateScepter();
   generateLeftUrn();
@@ -405,8 +410,6 @@ int borderTouched(Rect playerColl) {
 void setup() {
   arduboy.begin();
   arduboy.initRandomSeed();
-  initializeItemArray();
-
 
   room[0].x = 0;
   room[0].y = 0;
@@ -440,6 +443,8 @@ void setup() {
 }
 
 void generateMobs() {
+
+  free(mobs);
   mobs = (Mob *)malloc((2 + numberOfBats) * sizeof(Mob));
 
   mobs[0].hitBox.x = random(0, 2) == 0 ? 26 : 86;
@@ -493,6 +498,7 @@ void newGame() {
   player.lives = 9;
   player.faint = 0;
   player.cooldown = 0;
+  player.itemInUse = 'S';
 
   initTime = millis();
 }
@@ -542,7 +548,19 @@ int checkCollision(int direction) {
         if (arduboy.collide(playerColl, obstacle)) {
           return 1;
         }
-      } else if ((level[i][j] == 'P') && getSpotValue(i, j, player.floorNumber) == 'c' && !lights) {
+      } else if (level[i][j] == 'P' && getSpotValue(i, j, player.floorNumber) == 'c' && !lights && player.itemInUse != 'K') {
+        if(i==3 || i==7 || i==13){
+            obstacle.x = (j * 12) + 11;
+            obstacle.y = i * 12;
+            obstacle.width = 2;
+            obstacle.height = 12;       
+        }   
+        else{
+          obstacle.x = j * 12;
+          obstacle.y = (i * 12) + 5;
+          obstacle.width = 12;
+          obstacle.height = 2;  
+        }             
         if (arduboy.collide(playerColl, obstacle)) {
           return 1;
         }
@@ -572,7 +590,7 @@ int checkCollision(int direction) {
             touched = 0;
           }
         }
-      } else if (getSpotValue(i, j, player.floorNumber) == 'e' && itemInUse == 'C' && arduboy.collide(playerColl, obstacle)
+      } else if (getSpotValue(i, j, player.floorNumber) == 'e' && player.itemInUse == 'C' && arduboy.collide(playerColl, obstacle)
                  && borderTouched(playerColl)) {
         gamePhase = 2;
         endTime = millis();
@@ -707,9 +725,9 @@ void loop() {
               Sprites::drawSelfMasked(12 * j + 2, 12 * i - player.viewportY + 2, scepter, 0);
             }
             if (arduboy.collide(player.hitBox, scepterHitBox)) {
-              placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 8, 8);
+              placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 8);
               //setSpotValue(i,j, player.floorNumber, itemInUse);
-              itemInUse = 'S';
+              player.itemInUse = 'S';
             }
 
             //arduboy.drawRect(player.hitBox.x-3,player.hitBox.y-6,15,15,WHITE);
@@ -724,18 +742,18 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnRight, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (itemInUse == 'L') {
+              if (player.itemInUse == 'L') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                itemInUse = 'H';
-              } else if (itemInUse == 'M') {
+                player.itemInUse = 'H';
+              } else if (player.itemInUse == 'M') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                itemInUse = 'J';
-              } else if (itemInUse == 'I') {
+                player.itemInUse = 'J';
+              } else if (player.itemInUse == 'I') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                itemInUse = 'C';
+                player.itemInUse = 'C';
               } else {
-                placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 4, 4);
-                itemInUse = 'R';
+                placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 4);
+                player.itemInUse = 'R';
               }
             }
           } else if (getSpotValue(i, j, player.floorNumber) == 'L' && toggleMatch) {
@@ -749,18 +767,18 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnLeft, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (itemInUse == 'R') {
+              if (player.itemInUse == 'R') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                itemInUse = 'H';
-              } else if (itemInUse == 'M') {
+                player.itemInUse = 'H';
+              } else if (player.itemInUse == 'M') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                itemInUse = 'I';
-              } else if (itemInUse == 'J') {
+                player.itemInUse = 'I';
+              } else if (player.itemInUse == 'J') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                itemInUse = 'C';
+                player.itemInUse = 'C';
               } else {
-                placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 4, 4);
-                itemInUse = 'L';
+                placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 4);
+                player.itemInUse = 'L';
               }
             }
           } else if (getSpotValue(i, j, player.floorNumber) == 'M' && toggleMatch) {
@@ -773,18 +791,18 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnCenter, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (itemInUse == 'R') {
+              if (player.itemInUse == 'R') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                itemInUse = 'J';
-              } else if (itemInUse == 'L') {
+                player.itemInUse = 'J';
+              } else if (player.itemInUse == 'L') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                itemInUse = 'I';
-              } else if (itemInUse == 'H') {
+                player.itemInUse = 'I';
+              } else if (player.itemInUse == 'H') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                itemInUse = 'C';
+                player.itemInUse = 'C';
               } else {
-                placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 4, 8);
-                itemInUse = 'M';
+                placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
+                player.itemInUse = 'M';
               }
             }
           } else if (getSpotValue(i, j, player.floorNumber) == 'H' && toggleMatch) {
@@ -797,12 +815,12 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnLeftRight, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (itemInUse == 'M') {
+              if (player.itemInUse == 'M') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                itemInUse = 'C';
+                player.itemInUse = 'C';
               } else {
-                placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 4, 8);
-                itemInUse = 'H';
+                placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
+                player.itemInUse = 'H';
               }
             }
           } else if (getSpotValue(i, j, player.floorNumber) == 'I' && toggleMatch) {
@@ -815,12 +833,12 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnLeftCenter, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (itemInUse == 'R') {
+              if (player.itemInUse == 'R') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                itemInUse = 'C';
+                player.itemInUse = 'C';
               } else {
-                placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 4, 8);
-                itemInUse = 'I';
+                placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
+                player.itemInUse = 'I';
               }
             }
           } else if (getSpotValue(i, j, player.floorNumber) == 'J' && toggleMatch) {
@@ -833,12 +851,12 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnCenterRight, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (itemInUse == 'L') {
+              if (player.itemInUse == 'L') {
                 placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                itemInUse = 'C';
+                player.itemInUse = 'C';
               } else {
-                placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 4, 8);
-                itemInUse = 'J';
+                placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
+                player.itemInUse = 'J';
               }
             }
           } else if (getSpotValue(i, j, player.floorNumber) == 'C' && toggleMatch) {
@@ -851,8 +869,8 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, urn, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 8, 8);
-              itemInUse = 'C';
+              placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 8);
+              player.itemInUse = 'C';
             }
           } else if (getSpotValue(i, j, player.floorNumber) == 'K' && toggleMatch) {
             Rect keyHitBox;
@@ -865,8 +883,8 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, key, 0);
             }
             if (arduboy.collide(player.hitBox, keyHitBox)) {
-              placeItemInEmptySpot(i, j, player.floorNumber, itemInUse, 8, 3);
-              itemInUse = 'K';
+              placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 3);
+              player.itemInUse = 'K';
             }
           }
         }
@@ -938,6 +956,10 @@ void loop() {
         now = millis();
         matchesUsed++;
       }
+
+      /*if (arduboy.justPressed(A_BUTTON)) {
+        arduboy.invert(++color%2);   
+      }*/
     }
 
 
@@ -949,7 +971,7 @@ void loop() {
     tinyfont.print(player.floorNumber + 1);
     tinyfont.setCursor(122, 20);
     tinyfont.print(matchesUsed);
-    printItemInUse();
+    printItemInUse(player);
 
 
     if (arduboy.everyXFrames(10)) {
@@ -1061,13 +1083,13 @@ void printMob(Mob mob, int lights) {
 }
 
 void goToDirection(Mob *mob) {
-  if (mob->direction == 0) {
+  if (mob->direction == RIGHT) {
     mob->hitBox.x++;
-  } else if (mob->direction == 1) {
+  } else if (mob->direction == LEFT) {
     mob->hitBox.x--;
-  } else if (mob->direction == 2) {
+  } else if (mob->direction == UP) {
     mob->hitBox.y++;
-  } else if (mob->direction == 3) {
+  } else if (mob->direction == DOWN) {
     mob->hitBox.y--;
   }
 }
@@ -1076,28 +1098,29 @@ void getNextDirection(Mob *mob) {
   int flag = 1;
   int rnd = random(0, 4);
   while (flag) {
-    if ((mob->roomNumber == 0 && rnd == 1) || (mob->roomNumber == 1 && rnd == 0)
-        || (mob->roomNumber == 4 && rnd == 1) || (mob->roomNumber == 5 && rnd == 0)
-        || (mob->roomNumber == 0 && rnd == 3 && getSpotValue(0, 2, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 1 && rnd == 3 && getSpotValue(0, 7, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 2 && rnd == 1 && getSpotValue(7, 0, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 3 && rnd == 0 && getSpotValue(7, 9, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 4 && rnd == 2 && getSpotValue(15, 2, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 5 && rnd == 2 && getSpotValue(15, 7, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 0 && rnd == 0 && getSpotValue(3, 4, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 1 && rnd == 1 && getSpotValue(3, 5, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 0 && rnd == 2 && getSpotValue(5, 2, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 2 && rnd == 3 && getSpotValue(5, 2, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 1 && rnd == 2 && getSpotValue(5, 7, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 3 && rnd == 3 && getSpotValue(5, 7, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 2 && rnd == 0 && getSpotValue(7, 4, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 3 && rnd == 1 && getSpotValue(7, 5, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 2 && rnd == 2 && getSpotValue(10, 2, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 4 && rnd == 3 && getSpotValue(10, 2, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 3 && rnd == 2 && getSpotValue(10, 7, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 5 && rnd == 3 && getSpotValue(10, 7, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 4 && rnd == 0 && getSpotValue(13, 4, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 5 && rnd == 1 && getSpotValue(13, 5, mob->floorNumber) == 'l')) {
+    if ((mob->roomNumber == 0 && rnd == LEFT) || (mob->roomNumber == 1 && rnd == RIGHT)
+        || (mob->roomNumber == 4 && rnd == LEFT) || (mob->roomNumber == 5 && rnd == RIGHT)
+        || (mob->roomNumber == 0 && rnd == UP && getSpotValue(0, 2, mob->floorNumber) == ('X' || 'e'))
+        || (mob->roomNumber == 1 && rnd == UP && getSpotValue(0, 7, mob->floorNumber) == ('X' || 'e'))
+        || (mob->roomNumber == 2 && rnd == LEFT && getSpotValue(7, 0, mob->floorNumber) == ('X' || 'e'))
+        || (mob->roomNumber == 3 && rnd == RIGHT && getSpotValue(7, 9, mob->floorNumber) == ('X' || 'e'))
+        || (mob->roomNumber == 4 && rnd == DOWN && getSpotValue(15, 2, mob->floorNumber) == ('X' || 'e'))
+        || (mob->roomNumber == 5 && rnd == DOWN && getSpotValue(15, 7, mob->floorNumber) == ('X' || 'e'))
+        /*|| (mob->roomNumber == 0 && rnd == RIGHT && getSpotValue(3, 4, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 1 && rnd == LEFT && getSpotValue(3, 5, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 0 && rnd == UP && getSpotValue(5, 2, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 2 && rnd == DOWN && getSpotValue(5, 2, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 1 && rnd == UP && getSpotValue(5, 7, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 3 && rnd == DOWN && getSpotValue(5, 7, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 2 && rnd == RIGHT && getSpotValue(7, 4, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 3 && rnd == LEFT && getSpotValue(7, 5, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 2 && rnd == UP && getSpotValue(10, 2, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 4 && rnd == DOWN && getSpotValue(10, 2, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 3 && rnd == UP && getSpotValue(10, 7, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 5 && rnd == DOWN && getSpotValue(10, 7, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 4 && rnd == RIGHT && getSpotValue(13, 4, mob->floorNumber) == 'l')
+        || (mob->roomNumber == 5 && rnd == LEFT && getSpotValue(13, 5, mob->floorNumber) == 'l')*/
+        ) {
       rnd = random(0, 4);
     } else {
       flag = 0;
@@ -1106,16 +1129,25 @@ void getNextDirection(Mob *mob) {
   mob->direction = rnd;
 }
 
+void removeDeadlocks() {
+}
+
+void isKeyReachable() {
+}
+
+void isEveryRoomReachable() {
+}
+
 void moveMob(Mob *mob) {
   int mobRoom = mobRoomNumber(*mob);
 
-  if (playerAndEnemyInSameRoom(*mob) && itemInUse != 'S' && !player.faint) {
+  if (playerAndEnemyInSameRoom(*mob) && (player.itemInUse != 'S' || mob->mobType == 1) && !player.faint) {
     toggleMatch = 0;
 
     mob->roomCenterX = 0;
     mob->roomCenterY = 0;
 
-    if (arduboy.everyXFrames(3)) {
+    if (arduboy.everyXFrames(mob->mobType == 1 ? 2 : 3)) {
       if (player.hitBox.x > mob->hitBox.x) {
         mob->hitBox.x++;
       } else if (player.hitBox.x < mob->hitBox.x) {
@@ -1134,11 +1166,17 @@ void moveMob(Mob *mob) {
       pl.width = player.hitBox.width;
       pl.height = player.hitBox.height;
 
+      //if enemy collides player 
       if (arduboy.collide(pl, mob->hitBox) && !player.faint) {
         player.faint = 1;
         player.lives--;
         if (player.lives == 0) {
           gamePhase = 3;
+        }
+        //if bat take item in use away
+        if (mob->mobType == 2) {
+          generateItem(player.itemInUse);
+          player.itemInUse = 'X';
         }
       }
     }
@@ -1146,10 +1184,10 @@ void moveMob(Mob *mob) {
 
   } else if (mob->roomCenterX == 1 && mob->roomCenterY == 1) {
 
-    if (arduboy.everyXFrames(3)) {
+    if (arduboy.everyXFrames(4)) {
 
       goToDirection(mob);
-
+      //if mob hits the borderk aka change floor
       if (mob->hitBox.x <= 0 || mob->hitBox.x >= 110 || mob->hitBox.y <= 0 || mob->hitBox.y >= 184) {
         if (getSpotValue(mob->hitBox.y / 12, mob->hitBox.x / 12, mob->floorNumber) == 'u') {
           mob->floorNumber++;
@@ -1161,6 +1199,7 @@ void moveMob(Mob *mob) {
         mob->previousDirection = mob->direction;
         getNextDirection(mob);
       }
+      //if mob changes room
       if (mobRoomNumber(*mob) != mob->roomNumber) {
         mob->roomCenterX = 0;
         mob->roomCenterY = 0;
@@ -1170,7 +1209,7 @@ void moveMob(Mob *mob) {
       }
     }
   } else {
-    if (arduboy.everyXFrames(3)) {
+    if (arduboy.everyXFrames(4)) {
 
       //Move on X axis
       if (mobRoom % 2 == 0) {

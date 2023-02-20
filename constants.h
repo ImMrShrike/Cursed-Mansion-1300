@@ -214,3 +214,8 @@ constexpr uint8_t urnIcon[] PROGMEM
 };
 
 const int MAX_NUMBER_OF_ITEMS_IN_HOUSE = 44;
+const int RIGHT = 0;
+const int LEFT = 1;
+const int UP = 2;
+const int DOWN = 3;
+
