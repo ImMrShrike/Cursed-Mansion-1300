@@ -50,13 +50,13 @@ Item items[MAX_NUMBER_OF_ITEMS_IN_HOUSE];
 
 void initializeItemArray() {
   for (int i = 0; i < MAX_NUMBER_OF_ITEMS_IN_HOUSE; i++) {
-    items[i].value = 'X';
+    items[i].value = NO_ITEM;
   }
 }
 
 int getFirstEmptyItemSpot() {
   for (int i = 0; i < MAX_NUMBER_OF_ITEMS_IN_HOUSE; i++) {
-    if (items[i].value == 'X') {
+    if (items[i].value == NO_ITEM) {
       return i;
     }
   }
@@ -82,23 +82,23 @@ int gamePhase = 0;
 int color = 0;
 
 void printItemInUse(Player player) {
-  if (player.itemInUse == 'S') {
+  if (player.itemInUse == SCEPTER) {
     Sprites::drawOverwrite(122, 30, scepterIcon, 0);
-  } else if (player.itemInUse == 'C') {
+  } else if (player.itemInUse == COMPLETE_URN) {
     Sprites::drawOverwrite(122, 30, urnIcon, 0);
-  } else if (player.itemInUse == 'R') {
+  } else if (player.itemInUse == RIGHT_PART_OF_URN) {
     Sprites::drawOverwrite(122, 30, urnIcon, 1);
-  } else if (player.itemInUse == 'L') {
+  } else if (player.itemInUse == LEFT_PART_OF_URN) {
     Sprites::drawOverwrite(122, 30, urnIcon, 2);
-  } else if (player.itemInUse == 'M') {
+  } else if (player.itemInUse == MIDDLE_PART_OF_URN) {
     Sprites::drawOverwrite(122, 30, urnIcon, 3);
-  } else if (player.itemInUse == 'J') {
+  } else if (player.itemInUse == MIDDLE_AND_RIGHT_PART_OF_URN) {
     Sprites::drawOverwrite(122, 30, urnIcon, 4);
-  } else if (player.itemInUse == 'I') {
+  } else if (player.itemInUse == LEFT_AND_MIDDLE_PART_OF_URN) {
     Sprites::drawOverwrite(122, 30, urnIcon, 5);
-  } else if (player.itemInUse == 'H') {
+  } else if (player.itemInUse == LEFT_AND_RIGHT_PART_OF_URN) {
     Sprites::drawOverwrite(122, 30, urnIcon, 6);
-  } else if (player.itemInUse == 'K') {
+  } else if (player.itemInUse == KEY) {
     Sprites::drawOverwrite(122, 30, keyIcon, 0);
   }
 }
@@ -136,24 +136,7 @@ Mob bat3;*/
 // X - No Item
 
 
-char level[16][11] = {
-  { 'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 'w', '0', '0', '0', 'P', 'p', '0', '0', '0', 'w', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 'w', 'w', 'P', 'w', 'w', 'w', 'w', 'P', 'w', 'w', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 's', '0', '0', '0', 'P', 'p', '0', '0', '0', 's', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 'w', 'w', 'P', 'w', 'w', 'w', 'w', 'P', 'w', 'w', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 'w', '0', '0', '0', 'P', 'p', '0', '0', '0', 'w', 'w' },
-  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
-  { 'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w' }
-};
+
 
 Rect room[6];
 
@@ -163,7 +146,7 @@ char getSpotValue(int i, int j, int floorNumber) {
       return items[k].value;
     }
   }
-  return 'X';
+  return NO_ITEM;
 }
 
 int areRoomsAdjacent(int room1, int room2) {
@@ -213,12 +196,12 @@ void generateExit() {
   while (loop) {
     int i = random(0, 16);
     int j = random(0, 10);
-    if (level[i][j] == 's') {
+    if (level[i][j] == STAIRS) {
       Item exitDoor;
       exitDoor.y = i;
       exitDoor.x = j;
       exitDoor.floorNumber = 0;
-      exitDoor.value = 'e';
+      exitDoor.value = EXIT;
       items[getFirstEmptyItemSpot()] = exitDoor;
       loop = 0;
     }
@@ -228,23 +211,23 @@ void generateExit() {
 
 
 void generateScepter() {
-  generateItem('S');
+  generateItem(SCEPTER);
 }
 
 void generateLeftUrn() {
-  generateItem('L');
+  generateItem(LEFT_PART_OF_URN);
 }
 
 void generateRightUrn() {
-  generateItem('R');
+  generateItem(RIGHT_PART_OF_URN);
 }
 
 void generateMiddleUrn() {
-  generateItem('M');
+  generateItem(MIDDLE_PART_OF_URN);
 }
 
 void generateKey() {
-  generateItem('K');
+  generateItem(KEY);
 }
 
 void generateItem(char itemValue) {
@@ -252,7 +235,7 @@ void generateItem(char itemValue) {
     int i = random(0, 16);
     int j = random(0, 10);
     int floorNumber = random(0, 4);
-    if (level[i][j] == '0' && getSpotValue(i, j, floorNumber) == 'X') {
+    if (level[i][j] == EMPTY_SPACE && getSpotValue(i, j, floorNumber) == NO_ITEM) {
       Item item;
       item.y = i;
       item.x = j;
@@ -274,19 +257,19 @@ void generateStairs() {
     while (loop) {
       int i = random(0, 16);
       int j = random(0, 10);
-      if (level[i][j] == 's' && getSpotValue(i, j, flr) == 'X') {
+      if (level[i][j] == STAIRS && getSpotValue(i, j, flr) == NO_ITEM) {
         Item stairsUp;
         stairsUp.y = i;
         stairsUp.x = j;
         stairsUp.floorNumber = flr;
-        stairsUp.value = 'u';
+        stairsUp.value = STAIRS_UP;
         items[getFirstEmptyItemSpot()] = stairsUp;
 
         Item stairsDown;
         stairsDown.y = i;
         stairsDown.x = j;
         stairsDown.floorNumber = flr + 1;
-        stairsDown.value = 'd';
+        stairsDown.value = STAIRS_DOWN;
         items[getFirstEmptyItemSpot()] = stairsDown;
         loop--;
       }
@@ -302,12 +285,12 @@ void generateDoors() {
     while (loop) {
       int i = random(0, 16);
       int j = random(0, 10);
-      if (level[i][j] == 'P' && getSpotValue(i, j, flr) == 'X') {
+      if (level[i][j] == PASSAGE && getSpotValue(i, j, flr) == NO_ITEM) {
         Item door;
         door.y = i;
         door.x = j;
         door.floorNumber = flr;
-        door.value = 'c';
+        door.value = CLOSED_DOOR;
         items[getFirstEmptyItemSpot()] = door;
         loop--;
       }
@@ -327,8 +310,8 @@ void placeItemInEmptySpot(int i, int j, int floorNumber, char item, int itemWidt
       if (!flag && !(y == 0 && x == 0)) {
         itemHitBox.x = j + x;
         itemHitBox.y = i + y;
-        if (getSpotValue(i + y, j + x, floorNumber) == 'X' && level[i + y][j + x] == '0' && !arduboy.collide(player.hitBox, itemHitBox)) {
-          setSpotValue(i, j, floorNumber, 'X');
+        if (getSpotValue(i + y, j + x, floorNumber) == NO_ITEM && level[i + y][j + x] == EMPTY_SPACE && !arduboy.collide(player.hitBox, itemHitBox)) {
+          setSpotValue(i, j, floorNumber, NO_ITEM);
           setSpotValue(i + y, j + x, floorNumber, item);
           flag = 1;
         }
@@ -498,7 +481,7 @@ void newGame() {
   player.lives = 9;
   player.faint = 0;
   player.cooldown = 0;
-  player.itemInUse = 'S';
+  player.itemInUse = SCEPTER;
 
   initTime = millis();
 }
@@ -544,11 +527,11 @@ int checkCollision(int direction) {
       obstacle.y = i * 12;
       obstacle.width = 12;
       obstacle.height = 12;
-      if (level[i][j] == 'w') {
+      if (level[i][j] == WALL) {
         if (arduboy.collide(playerColl, obstacle)) {
           return 1;
         }
-      } else if (level[i][j] == 'P' && getSpotValue(i, j, player.floorNumber) == 'c' && !lights && player.itemInUse != 'K') {
+      } else if (level[i][j] == PASSAGE && getSpotValue(i, j, player.floorNumber) == CLOSED_DOOR && !lights && player.itemInUse != KEY) {
         if(i==3 || i==7 || i==13){
             obstacle.x = (j * 12) + 11;
             obstacle.y = i * 12;
@@ -564,12 +547,13 @@ int checkCollision(int direction) {
         if (arduboy.collide(playerColl, obstacle)) {
           return 1;
         }
-      } else if (getSpotValue(i, j, player.floorNumber) == 'u') {
+      } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_UP) {
         if (arduboy.collide(playerColl, obstacle)) {
           if (borderTouched(playerColl)) {
             if (!touched) {
               if (player.floorNumber < 3) {
                 player.floorNumber++;
+                sound.tone(NOTE_A1,250,NOTE_E2,250,NOTE_G2,500);
               }
               touched = 1;
             }
@@ -577,12 +561,13 @@ int checkCollision(int direction) {
             touched = 0;
           }
         }
-      } else if (getSpotValue(i, j, player.floorNumber) == 'd') {
+      } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_DOWN) {
         if (arduboy.collide(playerColl, obstacle)) {
           if (borderTouched(playerColl)) {
             if (!touched) {
               if (player.floorNumber > 0) {
                 player.floorNumber--;
+                sound.tone(NOTE_G2,500,NOTE_E2,250,NOTE_A1,250);
               }
               touched = 1;
             }
@@ -590,7 +575,7 @@ int checkCollision(int direction) {
             touched = 0;
           }
         }
-      } else if (getSpotValue(i, j, player.floorNumber) == 'e' && player.itemInUse == 'C' && arduboy.collide(playerColl, obstacle)
+      } else if (getSpotValue(i, j, player.floorNumber) == EXIT && player.itemInUse == COMPLETE_URN && arduboy.collide(playerColl, obstacle)
                  && borderTouched(playerColl)) {
         gamePhase = 2;
         endTime = millis();
@@ -660,7 +645,7 @@ void loop() {
     //arduboy.print(viewportY+player.hitBox.y);
 
     /*for(int i=0;i<MAX_NUMBER_OF_ITEMS_IN_HOUSE;i++){
-    if(items[i].value=='S'){
+    if(items[i].value==SCEPTER){
       tinyfont.setCursor(20,10);
       tinyfont.print(items[i].x);
       tinyfont.setCursor(20,20);
@@ -669,7 +654,7 @@ void loop() {
       tinyfont.print(items[i].floorNumber);
     }
 
-     if(items[i].value=='K'){
+     if(items[i].value==KEY){
       tinyfont.setCursor(60,10);
       tinyfont.print(items[i].x);
       tinyfont.setCursor(60,20);
@@ -701,20 +686,20 @@ void loop() {
     for (int i = 0; i < 16; i++) {
       for (int j = 0; j < 10; j++) {
         if (player.hitBox.y + player.viewportY > (i * 12) - 64 && player.hitBox.y + player.viewportY < (i * 12) + 70 && (lights || playerRoomNumber() == roomNumberOfCoordinates(i, j) || i == 5 || i == 10 || j == 4 || j == 5)) {
-          if (level[i][j] == 'w') {
+          if (level[i][j] == WALL) {
             if (lights) {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
               //arduboy.drawRect(12 * j, 12 * i - player.viewportY, 12, 12, WHITE);
             } else {
               Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == 'e') {
+          } else if (getSpotValue(i, j, player.floorNumber) == EXIT) {
             Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, exitBlock, 0);
-          } else if (getSpotValue(i, j, player.floorNumber) == 'u') {
+          } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_UP) {
             Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, up, 0);
-          } else if (getSpotValue(i, j, player.floorNumber) == 'd') {
+          } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_DOWN) {
             Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, down, 0);
-          } else if (getSpotValue(i, j, player.floorNumber) == 'S' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == SCEPTER && toggleMatch) {
             Rect scepterHitBox;
             scepterHitBox.x = 12 * j + 2;
             scepterHitBox.y = 12 * i - player.viewportY + 2;
@@ -727,11 +712,11 @@ void loop() {
             if (arduboy.collide(player.hitBox, scepterHitBox)) {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 8);
               //setSpotValue(i,j, player.floorNumber, itemInUse);
-              player.itemInUse = 'S';
+              player.itemInUse = SCEPTER;
             }
 
             //arduboy.drawRect(player.hitBox.x-3,player.hitBox.y-6,15,15,WHITE);
-          } else if (getSpotValue(i, j, player.floorNumber) == 'R' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == RIGHT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
             urnHitBox.x = 12 * j;
             urnHitBox.y = 12 * i - player.viewportY;
@@ -742,21 +727,25 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnRight, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (player.itemInUse == 'L') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                player.itemInUse = 'H';
-              } else if (player.itemInUse == 'M') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                player.itemInUse = 'J';
-              } else if (player.itemInUse == 'I') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                player.itemInUse = 'C';
+              if (player.itemInUse == LEFT_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
+                player.itemInUse = LEFT_AND_RIGHT_PART_OF_URN;
+                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+              } else if (player.itemInUse == MIDDLE_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
+                player.itemInUse = MIDDLE_AND_RIGHT_PART_OF_URN;
+                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+              } else if (player.itemInUse == LEFT_AND_MIDDLE_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
+                player.itemInUse = COMPLETE_URN;
+                sound.tone(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 4);
-                player.itemInUse = 'R';
+                player.itemInUse = RIGHT_PART_OF_URN;
+                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == 'L' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == LEFT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
             urnHitBox.x = 12 * j;
             urnHitBox.y = 12 * i - player.viewportY;
@@ -767,21 +756,25 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnLeft, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (player.itemInUse == 'R') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                player.itemInUse = 'H';
-              } else if (player.itemInUse == 'M') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                player.itemInUse = 'I';
-              } else if (player.itemInUse == 'J') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 4);
-                player.itemInUse = 'C';
+              if (player.itemInUse == RIGHT_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
+                player.itemInUse = LEFT_AND_RIGHT_PART_OF_URN;
+                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+              } else if (player.itemInUse == MIDDLE_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
+                player.itemInUse = LEFT_AND_MIDDLE_PART_OF_URN;
+                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+              } else if (player.itemInUse == MIDDLE_AND_RIGHT_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
+                player.itemInUse = COMPLETE_URN;
+                sound.tone(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 4);
-                player.itemInUse = 'L';
+                player.itemInUse = LEFT_PART_OF_URN;
+                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == 'M' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == MIDDLE_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
             urnHitBox.x = 12 * j;
             urnHitBox.y = 12 * i - player.viewportY;
@@ -791,21 +784,25 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnCenter, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (player.itemInUse == 'R') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                player.itemInUse = 'J';
-              } else if (player.itemInUse == 'L') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                player.itemInUse = 'I';
-              } else if (player.itemInUse == 'H') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                player.itemInUse = 'C';
+              if (player.itemInUse == RIGHT_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
+                player.itemInUse = MIDDLE_AND_RIGHT_PART_OF_URN;
+                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+              } else if (player.itemInUse == LEFT_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
+                player.itemInUse = LEFT_AND_MIDDLE_PART_OF_URN;
+                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+              } else if (player.itemInUse == LEFT_AND_RIGHT_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
+                player.itemInUse = COMPLETE_URN;
+                sound.tone(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
-                player.itemInUse = 'M';
+                player.itemInUse = MIDDLE_PART_OF_URN;
+                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == 'H' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == LEFT_AND_RIGHT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
             urnHitBox.x = 12 * j;
             urnHitBox.y = 12 * i - player.viewportY;
@@ -815,15 +812,17 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnLeftRight, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (player.itemInUse == 'M') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                player.itemInUse = 'C';
+              if (player.itemInUse == MIDDLE_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
+                player.itemInUse = COMPLETE_URN;
+                sound.tone(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
-                player.itemInUse = 'H';
+                player.itemInUse = LEFT_AND_RIGHT_PART_OF_URN;
+                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == 'I' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == LEFT_AND_MIDDLE_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
             urnHitBox.x = 12 * j;
             urnHitBox.y = 12 * i - player.viewportY;
@@ -833,15 +832,17 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnLeftCenter, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (player.itemInUse == 'R') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                player.itemInUse = 'C';
+              if (player.itemInUse == RIGHT_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
+                player.itemInUse = COMPLETE_URN;
+                sound.tone(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
-                player.itemInUse = 'I';
+                player.itemInUse = LEFT_AND_MIDDLE_PART_OF_URN;
+                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == 'J' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == MIDDLE_AND_RIGHT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
             urnHitBox.x = 12 * j;
             urnHitBox.y = 12 * i - player.viewportY;
@@ -851,15 +852,17 @@ void loop() {
               Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, brokenUrnCenterRight, 0);
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
-              if (player.itemInUse == 'L') {
-                placeItemInEmptySpot(i, j, player.floorNumber, 'X', 4, 8);
-                player.itemInUse = 'C';
+              if (player.itemInUse == LEFT_PART_OF_URN) {
+                placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
+                player.itemInUse = COMPLETE_URN;
+                sound.tone(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
-                player.itemInUse = 'J';
+                player.itemInUse = MIDDLE_AND_RIGHT_PART_OF_URN;
+                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == 'C' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == COMPLETE_URN && toggleMatch) {
             Rect urnHitBox;
             urnHitBox.x = 12 * j;
             urnHitBox.y = 12 * i - player.viewportY;
@@ -870,9 +873,10 @@ void loop() {
             }
             if (arduboy.collide(player.hitBox, urnHitBox)) {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 8);
-              player.itemInUse = 'C';
+              player.itemInUse = COMPLETE_URN;
+              sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == 'K' && toggleMatch) {
+          } else if (getSpotValue(i, j, player.floorNumber) == KEY && toggleMatch) {
             Rect keyHitBox;
             keyHitBox.x = 12 * j;
             keyHitBox.y = 12 * i - player.viewportY;
@@ -884,7 +888,8 @@ void loop() {
             }
             if (arduboy.collide(player.hitBox, keyHitBox)) {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 3);
-              player.itemInUse = 'K';
+              player.itemInUse = KEY;
+              sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
             }
           }
         }
@@ -903,6 +908,9 @@ void loop() {
       }
     } else {
       if (arduboy.pressed(RIGHT_BUTTON) && !arduboy.pressed(LEFT_BUTTON)) {
+        if (arduboy.everyXFrames(10) && !sound.playing()) {
+          sound.tone(NOTE_C1,50);
+        }
         arduboy.fillRect(player.hitBox.x + 2, player.hitBox.y + 1, 1, 1, BLACK);
         arduboy.fillRect(player.hitBox.x + 7, player.hitBox.y + 1, 1, 1, BLACK);
         if (player.hitBox.x < 110 && !checkCollision(3)) {
@@ -911,6 +919,9 @@ void loop() {
       }
 
       if (arduboy.pressed(LEFT_BUTTON) && !arduboy.pressed(RIGHT_BUTTON)) {
+        if (arduboy.everyXFrames(10) && !sound.playing()) {
+          sound.tone(NOTE_C1,50);
+        }
         arduboy.fillRect(player.hitBox.x, player.hitBox.y + 1, 1, 1, BLACK);
         arduboy.fillRect(player.hitBox.x + 5, player.hitBox.y + 1, 1, 1, BLACK);
         if (player.hitBox.x > 0 && !checkCollision(1)) {
@@ -919,6 +930,9 @@ void loop() {
       }
 
       if (arduboy.pressed(DOWN_BUTTON) && !arduboy.pressed(UP_BUTTON)) {
+        if (arduboy.everyXFrames(10) && !sound.playing()) {
+          sound.tone(NOTE_C1,50);
+        }
         arduboy.fillRect(player.hitBox.x + 1, player.hitBox.y + 2, 1, 1, BLACK);
         arduboy.fillRect(player.hitBox.x + 6, player.hitBox.y + 2, 1, 1, BLACK);
 
@@ -932,6 +946,9 @@ void loop() {
       }
 
       if (arduboy.pressed(UP_BUTTON) && !arduboy.pressed(DOWN_BUTTON)) {
+        if (arduboy.everyXFrames(10) && !sound.playing()) {
+          sound.tone(NOTE_C1,50);
+        }
         arduboy.fillRect(player.hitBox.x + 1, player.hitBox.y, 1, 1, BLACK);
         arduboy.fillRect(player.hitBox.x + 6, player.hitBox.y, 1, 1, BLACK);
 
@@ -993,9 +1010,9 @@ void loop() {
     } else if (d == 1) {
       tinyfont.print('l');
     } else if (d == 2) {
-      tinyfont.print('d');
+      tinyfont.print(STAIRS_DOWN);
     } else if (d == 3) {
-      tinyfont.print('u');
+      tinyfont.print(STAIRS_UP);
     }*/
 
     /* tinyfont.setCursor(80, 32);
@@ -1100,12 +1117,12 @@ void getNextDirection(Mob *mob) {
   while (flag) {
     if ((mob->roomNumber == 0 && rnd == LEFT) || (mob->roomNumber == 1 && rnd == RIGHT)
         || (mob->roomNumber == 4 && rnd == LEFT) || (mob->roomNumber == 5 && rnd == RIGHT)
-        || (mob->roomNumber == 0 && rnd == UP && getSpotValue(0, 2, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 1 && rnd == UP && getSpotValue(0, 7, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 2 && rnd == LEFT && getSpotValue(7, 0, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 3 && rnd == RIGHT && getSpotValue(7, 9, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 4 && rnd == DOWN && getSpotValue(15, 2, mob->floorNumber) == ('X' || 'e'))
-        || (mob->roomNumber == 5 && rnd == DOWN && getSpotValue(15, 7, mob->floorNumber) == ('X' || 'e'))
+        || (mob->roomNumber == 0 && rnd == UP && getSpotValue(0, 2, mob->floorNumber) == (NO_ITEM || EXIT))
+        || (mob->roomNumber == 1 && rnd == UP && getSpotValue(0, 7, mob->floorNumber) == (NO_ITEM || EXIT))
+        || (mob->roomNumber == 2 && rnd == LEFT && getSpotValue(7, 0, mob->floorNumber) == (NO_ITEM || EXIT))
+        || (mob->roomNumber == 3 && rnd == RIGHT && getSpotValue(7, 9, mob->floorNumber) == (NO_ITEM || EXIT))
+        || (mob->roomNumber == 4 && rnd == DOWN && getSpotValue(15, 2, mob->floorNumber) == (NO_ITEM || EXIT))
+        || (mob->roomNumber == 5 && rnd == DOWN && getSpotValue(15, 7, mob->floorNumber) == (NO_ITEM || EXIT))
         /*|| (mob->roomNumber == 0 && rnd == RIGHT && getSpotValue(3, 4, mob->floorNumber) == 'l')
         || (mob->roomNumber == 1 && rnd == LEFT && getSpotValue(3, 5, mob->floorNumber) == 'l')
         || (mob->roomNumber == 0 && rnd == UP && getSpotValue(5, 2, mob->floorNumber) == 'l')
@@ -1129,19 +1146,13 @@ void getNextDirection(Mob *mob) {
   mob->direction = rnd;
 }
 
-void removeDeadlocks() {
-}
-
-void isKeyReachable() {
-}
-
 void isEveryRoomReachable() {
 }
 
 void moveMob(Mob *mob) {
   int mobRoom = mobRoomNumber(*mob);
 
-  if (playerAndEnemyInSameRoom(*mob) && (player.itemInUse != 'S' || mob->mobType == 1) && !player.faint) {
+  if (playerAndEnemyInSameRoom(*mob) && (player.itemInUse != SCEPTER || mob->mobType == 1) && !player.faint) {
     toggleMatch = 0;
 
     mob->roomCenterX = 0;
@@ -1176,7 +1187,7 @@ void moveMob(Mob *mob) {
         //if bat take item in use away
         if (mob->mobType == 2) {
           generateItem(player.itemInUse);
-          player.itemInUse = 'X';
+          player.itemInUse = NO_ITEM;
         }
       }
     }
@@ -1189,9 +1200,9 @@ void moveMob(Mob *mob) {
       goToDirection(mob);
       //if mob hits the borderk aka change floor
       if (mob->hitBox.x <= 0 || mob->hitBox.x >= 110 || mob->hitBox.y <= 0 || mob->hitBox.y >= 184) {
-        if (getSpotValue(mob->hitBox.y / 12, mob->hitBox.x / 12, mob->floorNumber) == 'u') {
+        if (getSpotValue(mob->hitBox.y / 12, mob->hitBox.x / 12, mob->floorNumber) == STAIRS_UP) {
           mob->floorNumber++;
-        } else if (getSpotValue(mob->hitBox.y / 12, mob->hitBox.x / 12, mob->floorNumber) == 'd') {
+        } else if (getSpotValue(mob->hitBox.y / 12, mob->hitBox.x / 12, mob->floorNumber) == STAIRS_DOWN) {
           mob->floorNumber--;
         }
         mob->roomCenterX = 0;

@@ -218,4 +218,52 @@ const int RIGHT = 0;
 const int LEFT = 1;
 const int UP = 2;
 const int DOWN = 3;
+const char EMPTY_SPACE = '0';
+const char WALL ='w';
+const char EXIT ='e';
+const char STAIRS ='s';
+const char PASSAGE ='P';
+const char CLOSED_DOOR ='c';
+const char OPEN_DOOR ='o';
+const char LOCKED_DOOR ='l';
+const char STAIRS_UP ='u';
+const char STAIRS_DOWN ='d';
+const char SCEPTER ='S';
+const char KEY ='K';
+const char COMPLETE_URN ='C';
+const char LEFT_PART_OF_URN ='L';
+const char RIGHT_PART_OF_URN ='R';
+const char MIDDLE_PART_OF_URN ='M';
+const char LEFT_AND_MIDDLE_PART_OF_URN ='I';
+const char LEFT_AND_RIGHT_PART_OF_URN ='H';
+const char MIDDLE_AND_RIGHT_PART_OF_URN ='J';
+const char NO_ITEM ='X';
+
+// 0 - white space
+// w - wall
+// p/P - passage
+// s - stairs
+
+char level[16][11] = {
+  { 'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 'w', '0', '0', '0', 'P', 'p', '0', '0', '0', 'w', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 'w', 'w', 'P', 'w', 'w', 'w', 'w', 'P', 'w', 'w', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 's', '0', '0', '0', 'P', 'p', '0', '0', '0', 's', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 'w', 'w', 'P', 'w', 'w', 'w', 'w', 'P', 'w', 'w', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 'w', '0', '0', '0', 'P', 'p', '0', '0', '0', 'w', 'w' },
+  { 'w', '0', '0', '0', 'w', 'w', '0', '0', '0', 'w', 'w' },
+  { 'w', 'w', 's', 'w', 'w', 'w', 'w', 's', 'w', 'w', 'w' }
+};
+
+const uint16_t FULL_URN_SOUND[] = {
+  NOTE_B5,75,NOTE_REST,30,NOTE_B5,75,NOTE_REST,30,NOTE_B5,75,NOTE_REST,30,NOTE_B5,75,NOTE_REST,30,TONES_END
+};
 
