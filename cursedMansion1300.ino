@@ -79,9 +79,10 @@ int lights = 1;
 int numberOfBats = 1;
 int gamePhase = 0;
 int color = 0;
-int eyeRoll=0;
-int note = 140;
-int noteDirection = 0;
+int eyeRoll[8]={0,1,2,2,2,1,0,0};
+int eyeRollX=0;
+int eyeRollY=6;
+int note = 190;
 
 void printItemInUse(Player player) {
   if (player.itemInUse == SCEPTER) {
@@ -614,9 +615,7 @@ void loop() {
       player.cooldown = 0;
       player.faint = 0;
       color = 0;
-      arduboy.invert(color);
-      note = 140;
-      noteDirection = 0;
+      note = 190;
       generateMobs();
     }
     //player.roomNumber = playerRoomNumber();
@@ -650,11 +649,11 @@ void loop() {
 
     //DEBUG
     /*arduboy.print(1);*/
-    /* arduboy.setCursor(0,10);
-    arduboy.print(itemY);
-    arduboy.setCursor(0,20);
-    arduboy.print(itemFloor);
-  */
+     /*arduboy.setCursor(30,10);
+    arduboy.print(eyeRoll[eyeRollX]);
+    arduboy.setCursor(30,20);
+    arduboy.print(eyeRoll[eyeRollY]);*/
+  
 
     if (arduboy.everyXFrames(4) && toggleMatch) {
       arduboy.fillCircle(player.hitBox.x + 4, player.hitBox.y + 1, 10);
@@ -672,9 +671,19 @@ void loop() {
         if (player.hitBox.y + player.viewportY > (i * 12) - 64 && player.hitBox.y + player.viewportY < (i * 12) + 70 && (lights || playerRoomNumber() == roomNumberOfCoordinates(i, j) || i == 5 || i == 10 || j == 4 || j == 5)) {
           if (level[i][j] == WALL) {
             if (lights) {
-              Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
+              if(!color){
+                Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
+              }
+              else{
+                Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);  
+              }
             } else {
-              Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);
+              if(color){
+                Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
+              }
+              else{
+                Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);  
+              }
             }
           } else if (getSpotValue(i, j, player.floorNumber) == EXIT) {
             Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, exitBlock, 0);
@@ -886,27 +895,20 @@ void loop() {
 
     //arduboy.drawRect(player.hitBox.x,player.hitBox.y,9,3);
     if (player.faint) {
-        if (arduboy.everyXFrames(10)) {
-          arduboy.invert(++color%2);
-          arduboy.fillRect(player.hitBox.x + (++eyeRoll%2), player.hitBox.y + 1, 1, 1, BLACK);
-          arduboy.fillRect(player.hitBox.x + 6 + (++eyeRoll%2), player.hitBox.y + 1, 1, 1, BLACK);
-
-          if(noteDirection){
-            note+=5;
-            sound.tone(note,30);
-          }
-          else{
-            note-=5;
-            sound.tone(note,30);
-          }
-          
-          if(note<90){
-            noteDirection=1;
-          }
-          if(note>180){
-            noteDirection=0;
-          }
+        if (arduboy.everyXFrames(5)) {
+          color = (color+1)%2;
+          eyeRollX=(eyeRollX+1)%8;
+          eyeRollY=(eyeRollY+1)%8;
         }
+
+        sound.tone(note-=5,30);
+                  
+        if(note<90){
+          note=190;
+        }
+
+        arduboy.fillRect(player.hitBox.x + eyeRoll[eyeRollX], player.hitBox.y + eyeRoll[eyeRollY], 1, 1, BLACK);
+        arduboy.fillRect(player.hitBox.x + 5 + eyeRoll[eyeRollX], player.hitBox.y + eyeRoll[eyeRollY], 1, 1, BLACK);
       if (!player.cooldown) {
         player.cooldown = 1;
         now = millis();
@@ -987,13 +989,22 @@ void loop() {
 
 
     // game goes here
-    tinyfont.setCursor(122, 0);
+
+
+    //LIVES
+    Sprites::drawOverwrite(121, 0, heart, 0);
+    tinyfont.setCursor(122, 12);
     tinyfont.print(player.lives);
-    tinyfont.setCursor(122, 10);
-    tinyfont.print(player.floorNumber + 1);
-    tinyfont.setCursor(122, 20);
-    tinyfont.print(matchesUsed);
+
+    //ITEM IN USE
     printItemInUse(player);
+
+    //FLOOR
+    tinyfont.setCursor(122, 50);
+    tinyfont.print("F");
+    tinyfont.setCursor(122, 58);
+    tinyfont.print(player.floorNumber + 1);
+    
 
 
     if (arduboy.everyXFrames(10)) {

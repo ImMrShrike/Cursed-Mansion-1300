@@ -1,4 +1,12 @@
-#include "ArduboyTonesPitches.h"
+constexpr uint8_t heart[] PROGMEM
+{
+	// Width, Height
+	8, 8,
+	
+	// Frame 0
+	0x18, 0x3C, 0x7C, 0xF8, 0x7C, 0x3C, 0x18, 0x00,
+};
+
 constexpr uint8_t keyIcon[] PROGMEM
 {
   // Width, Height
