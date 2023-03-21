@@ -1199,6 +1199,7 @@ void moveMob(Mob *mob) {
         player.lives--;
         if (player.lives == 0) {
           gamePhase = 3;
+          sound.tonesInRAM(GAME_OVER);
         }
         //if bat take item in use away
         if (mob->mobType == 2) {
