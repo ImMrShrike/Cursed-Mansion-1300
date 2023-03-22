@@ -83,6 +83,9 @@ int eyeRoll[8]={0,1,2,2,2,1,0,0};
 int eyeRollX=0;
 int eyeRollY=6;
 int note = 190;
+Mob *mobs;
+Rect room[6];
+Player player;
 
 void printItemInUse(Player player) {
   if (player.itemInUse == SCEPTER) {
@@ -106,9 +109,7 @@ void printItemInUse(Player player) {
   }
 }
 
-Player player;
-Mob *mobs;
-Rect room[6];
+
 
 char getSpotValue(int i, int j, int floorNumber) {
   for (int k = 0; k < MAX_NUMBER_OF_ITEMS_IN_HOUSE; k++) {
@@ -162,23 +163,69 @@ void setSpotValue(int i, int j, int floorNumber, char value) {
 }
 
 void generateExit() {
-  int loop = 1;
-  while (loop) {
-    int i = random(0, 16);
-    int j = random(0, 10);
-    if (level[i][j] == STAIRS) {
-      Item exitDoor;
-      exitDoor.y = i;
-      exitDoor.x = j;
-      exitDoor.floorNumber = 0;
-      exitDoor.value = EXIT;
-      items[getFirstEmptyItemSpot()] = exitDoor;
-      loop = 0;
+  Item exitDoor;
+  exitDoor.floorNumber = 0;
+  exitDoor.value = EXIT;
+  
+  int rnd = random(0, 4);
+  if(rnd==0){
+    exitDoor.x = 0;
+  }
+  else if(rnd==1){
+    exitDoor.x = 2;
+  }
+  else if(rnd==2){
+    exitDoor.x = 7;
+  }
+  else{
+    exitDoor.x = 9;
+  }
+
+  if(rnd==0 || rnd==3){
+    exitDoor.y = 7;
+  }
+  else{
+    if(random(0, 2)==0){
+      exitDoor.y = 0;      
+    }
+    else{
+      exitDoor.y = 15;
+    }
+  }
+  items[getFirstEmptyItemSpot()] = exitDoor;
+}
+
+void generateStartingPoint(){
+  player.floorNumber=0;
+  player.roomNumber=playerRoomNumber();
+  for (int k = 0; k < MAX_NUMBER_OF_ITEMS_IN_HOUSE; k++) {
+    if (items[k].value = EXIT) {
+          //if exit is in room 0 or 2 or 4
+          if(items[k].x==0 || items[k].x==2){
+            player.hitBox.x=24;
+          }
+          //if exit is in room 1 or 3 or 5
+          else{
+            player.hitBox.x=84;
+          }
+
+          player.hitBox.y=32;
+          //if exit is in room 0 or 1
+          if(items[k].y==0){
+            player.viewportY=0;
+          }
+          //if exit is in room 2 or 3
+          else if(items[k].y==7){
+            player.viewportY=64;
+          }
+          //if exit is in room 4 or 5
+          else{
+            player.viewportY=128;
+          }
+      return;
     }
   }
 }
-
-
 
 void generateScepter() {
   generateItem(SCEPTER);
@@ -294,10 +341,11 @@ void placeItemInEmptySpot(int i, int j, int floorNumber, char item, int itemWidt
 
 
 
-void generateHouse(int lights, int numberOfBats) {
+void generateHouse() {
 
   initializeItemArray();
   generateExit();
+  generateStartingPoint();
   generateScepter();
   generateLeftUrn();
   generateRightUrn();
@@ -448,20 +496,16 @@ void generateMobs() {
 }
 
 void newGame() {
-  generateHouse(lights, numberOfBats);
+  
   // initialize things here
-
-  player.hitBox.x = 26;
-  player.hitBox.y = 20;
   player.hitBox.width = 8;
   player.hitBox.height = 3;
-  player.floorNumber = 0;
-  player.roomNumber = playerRoomNumber();
-  player.viewportY = 0;
   player.lives = 9;
   player.faint = 0;
   player.cooldown = 0;
   player.itemInUse = NO_ITEM;
+
+  generateHouse();
 
   initTime = millis();
 }
@@ -649,10 +693,10 @@ void loop() {
 
     //DEBUG
     /*arduboy.print(1);*/
-     /*arduboy.setCursor(30,10);
-    arduboy.print(eyeRoll[eyeRollX]);
+    /*arduboy.setCursor(30,10);
+    arduboy.print(items[exitIndex].x);
     arduboy.setCursor(30,20);
-    arduboy.print(eyeRoll[eyeRollY]);*/
+    arduboy.print(items[exitIndex].y);*/
   
 
     if (arduboy.everyXFrames(4) && toggleMatch) {
@@ -1199,7 +1243,7 @@ void moveMob(Mob *mob) {
         player.lives--;
         if (player.lives == 0) {
           gamePhase = 3;
-          sound.tonesInRAM(GAME_OVER);
+          //sound.tonesInRAM(GAME_OVER);
         }
         //if bat take item in use away
         if (mob->mobType == 2) {
