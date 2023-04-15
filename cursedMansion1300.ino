@@ -67,7 +67,6 @@ Arduboy2 arduboy;
 ArduboyTones sound(arduboy.audio.enabled);
 Tinyfont tinyfont = Tinyfont(arduboy.sBuffer, Arduboy2::width(), Arduboy2::height());
 
-
 int toggleMatch = 0;
 int twentyFrames = 0;
 int touched = 0;
@@ -140,9 +139,6 @@ int areRoomsAdjacent(int room1, int room2) {
     return 1;
   }
   return 0;
-}
-
-void placeItemInRandomAccessibleRoom(char item, int startingRoom, int startingFloor) {
 }
 
 void setSpotValue(int i, int j, int floorNumber, char value) {
@@ -360,6 +356,7 @@ void generateHouse() {
 
 
 int playerAndEnemyInSameRoom(Mob mob) {
+
   int sameRoom = 0;
   Rect pl;
   pl.x = player.hitBox.x;
@@ -602,7 +599,7 @@ int checkCollision(int direction) {
       } else if (getSpotValue(i, j, player.floorNumber) == EXIT && player.itemInUse == COMPLETE_URN && arduboy.collide(playerColl, obstacle)
                  && borderTouched(playerColl)) {
         gamePhase = 2;
-        sound.tonesInRAM(GAME_WIN);
+        sound.tones(GAME_WIN);
         endTime = millis();
       }
     }
@@ -716,14 +713,14 @@ void loop() {
           if (level[i][j] == WALL) {
             if (lights) {
               if(!color){
-                Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
+                Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
               }
               else{
                 Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);  
               }
             } else {
               if(color){
-                Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
+                Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
               }
               else{
                 Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);  
@@ -775,7 +772,7 @@ void loop() {
               } else if (player.itemInUse == LEFT_AND_MIDDLE_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
                 player.itemInUse = COMPLETE_URN;
-                sound.tonesInRAM(FULL_URN_SOUND);
+                sound.tones(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 4);
                 player.itemInUse = RIGHT_PART_OF_URN;
@@ -804,7 +801,7 @@ void loop() {
               } else if (player.itemInUse == MIDDLE_AND_RIGHT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
                 player.itemInUse = COMPLETE_URN;
-                sound.tonesInRAM(FULL_URN_SOUND);
+                sound.tones(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 4);
                 player.itemInUse = LEFT_PART_OF_URN;
@@ -832,7 +829,7 @@ void loop() {
               } else if (player.itemInUse == LEFT_AND_RIGHT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
                 player.itemInUse = COMPLETE_URN;
-                sound.tonesInRAM(FULL_URN_SOUND);
+                sound.tones(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
                 player.itemInUse = MIDDLE_PART_OF_URN;
@@ -852,7 +849,7 @@ void loop() {
               if (player.itemInUse == MIDDLE_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
                 player.itemInUse = COMPLETE_URN;
-                sound.tonesInRAM(FULL_URN_SOUND);
+                sound.tones(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
                 player.itemInUse = LEFT_AND_RIGHT_PART_OF_URN;
@@ -872,7 +869,7 @@ void loop() {
               if (player.itemInUse == RIGHT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
                 player.itemInUse = COMPLETE_URN;
-                sound.tonesInRAM(FULL_URN_SOUND);
+                sound.tones(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
                 player.itemInUse = LEFT_AND_MIDDLE_PART_OF_URN;
@@ -892,7 +889,7 @@ void loop() {
               if (player.itemInUse == LEFT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
                 player.itemInUse = COMPLETE_URN;
-                sound.tonesInRAM(FULL_URN_SOUND);
+                sound.tones(FULL_URN_SOUND);
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
                 player.itemInUse = MIDDLE_AND_RIGHT_PART_OF_URN;
@@ -933,24 +930,24 @@ void loop() {
       }
     }
 
+    //print white of eyes
     arduboy.fillRect(player.hitBox.x, player.hitBox.y, 3, 3);
     arduboy.fillRect(player.hitBox.x + 5, player.hitBox.y, 3, 3);
 
 
     //arduboy.drawRect(player.hitBox.x,player.hitBox.y,9,3);
     if (player.faint) {
+      
+        if(note<=NOTE_D3){
+          note = random(400, 500);
+        }
+        sound.tone(note-=20,30);      
+        
         if (arduboy.everyXFrames(5)) {
           color = (color+1)%2;
           eyeRollX=(eyeRollX+1)%8;
           eyeRollY=(eyeRollY+1)%8;
         }
-
-        sound.tone(note-=5,30);
-                  
-        if(note<90){
-          note=190;
-        }
-
         arduboy.fillRect(player.hitBox.x + eyeRoll[eyeRollX], player.hitBox.y + eyeRoll[eyeRollY], 1, 1, BLACK);
         arduboy.fillRect(player.hitBox.x + 5 + eyeRoll[eyeRollX], player.hitBox.y + eyeRoll[eyeRollY], 1, 1, BLACK);
       if (!player.cooldown) {
@@ -1243,7 +1240,7 @@ void moveMob(Mob *mob) {
         player.lives--;
         if (player.lives == 0) {
           gamePhase = 3;
-          //sound.tonesInRAM(GAME_OVER);
+          sound.tones(GAME_OVER);
         }
         //if bat take item in use away
         if (mob->mobType == 2) {
