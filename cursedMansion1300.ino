@@ -27,6 +27,8 @@ struct Player {
   int faint;
   int cooldown;
   char itemInUse;
+  int itemInUseW;
+  int itemInUseH;
 };
 
 
@@ -750,6 +752,8 @@ void loop() {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 8);
               //setSpotValue(i,j, player.floorNumber, itemInUse);
               player.itemInUse = SCEPTER;
+              player.itemInUseW=8;
+              player.itemInUseH=8;
               sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
             }
 
@@ -782,6 +786,8 @@ void loop() {
                 player.itemInUse = RIGHT_PART_OF_URN;
                 sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
+              player.itemInUseW=4;
+              player.itemInUseH=4;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == LEFT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -811,6 +817,8 @@ void loop() {
                 player.itemInUse = LEFT_PART_OF_URN;
                 sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
+              player.itemInUseW=4;
+              player.itemInUseH=4;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == MIDDLE_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -839,6 +847,8 @@ void loop() {
                 player.itemInUse = MIDDLE_PART_OF_URN;
                 sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
+              player.itemInUseW=4;
+              player.itemInUseH=8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == LEFT_AND_RIGHT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -859,6 +869,8 @@ void loop() {
                 player.itemInUse = LEFT_AND_RIGHT_PART_OF_URN;
                 sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
+              player.itemInUseW=4;
+              player.itemInUseH=8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == LEFT_AND_MIDDLE_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -879,6 +891,8 @@ void loop() {
                 player.itemInUse = LEFT_AND_MIDDLE_PART_OF_URN;
                 sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
+              player.itemInUseW=4;
+              player.itemInUseH=8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == MIDDLE_AND_RIGHT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -899,6 +913,8 @@ void loop() {
                 player.itemInUse = MIDDLE_AND_RIGHT_PART_OF_URN;
                 sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
               }
+              player.itemInUseW=4;
+              player.itemInUseH=8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == COMPLETE_URN && toggleMatch) {
             Rect urnHitBox;
@@ -913,6 +929,8 @@ void loop() {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 8);
               player.itemInUse = COMPLETE_URN;
               sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+              player.itemInUseW=8;
+              player.itemInUseH=8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == KEY && toggleMatch) {
             Rect keyHitBox;
@@ -928,6 +946,8 @@ void loop() {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 3);
               player.itemInUse = KEY;
               sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+              player.itemInUseW=8;
+              player.itemInUseH=3;
             }
           }
         }
@@ -1010,8 +1030,10 @@ void loop() {
         matchesUsed++;
       }
 
-      if (arduboy.justPressed(A_BUTTON)) {
-        
+      if (arduboy.justPressed(A_BUTTON) && NO_ITEM!=player.itemInUse) {
+        placeItemInEmptySpot((player.hitBox.y+player.viewportY)/12, player.hitBox.x/12, player.floorNumber, player.itemInUse, player.itemInUseW, player.itemInUseH);
+        player.itemInUse=NO_ITEM;
+        sound.tone(NOTE_B4,30,NOTE_A4,30,NOTE_A4,30);
       }
     }
 
