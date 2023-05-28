@@ -79,9 +79,9 @@ int lights = 1;
 int numberOfBats = 1;
 int gamePhase = 0;
 int color = 0;
-int eyeRoll[8]={0,1,2,2,2,1,0,0};
-int eyeRollX=0;
-int eyeRollY=6;
+int eyeRoll[8] = { 0, 1, 2, 2, 2, 1, 0, 0 };
+int eyeRollX = 0;
+int eyeRollY = 6;
 int note = 190;
 Mob *mobs;
 Rect room[6];
@@ -163,62 +163,57 @@ void generateExit() {
   Item exitDoor;
   exitDoor.floorNumber = 0;
   exitDoor.value = EXIT;
-  
+
   int rnd = random(0, 4);
-  if(rnd==0){
+  if (rnd == 0) {
     exitDoor.x = 0;
-  }
-  else if(rnd==1){
+  } else if (rnd == 1) {
     exitDoor.x = 2;
-  }
-  else if(rnd==2){
+  } else if (rnd == 2) {
     exitDoor.x = 7;
-  }
-  else{
+  } else {
     exitDoor.x = 9;
   }
 
-  if(rnd==0 || rnd==3){
+  if (rnd == 0 || rnd == 3) {
     exitDoor.y = 7;
-  }
-  else{
-    if(random(0, 2)==0){
-      exitDoor.y = 0;      
-    }
-    else{
+  } else {
+    if (random(0, 2) == 0) {
+      exitDoor.y = 0;
+    } else {
       exitDoor.y = 15;
     }
   }
   items[getFirstEmptyItemSpot()] = exitDoor;
 }
 
-void generateStartingPoint(){
-  player.floorNumber=0;
-  player.roomNumber=playerRoomNumber();
+void generateStartingPoint() {
+  player.floorNumber = 0;
+  player.roomNumber = playerRoomNumber();
   for (int k = 0; k < MAX_NUMBER_OF_ITEMS_IN_HOUSE; k++) {
     if (items[k].value = EXIT) {
-          //if exit is in room 0 or 2 or 4
-          if(items[k].x==0 || items[k].x==2){
-            player.hitBox.x=24;
-          }
-          //if exit is in room 1 or 3 or 5
-          else{
-            player.hitBox.x=84;
-          }
+      //if exit is in room 0 or 2 or 4
+      if (items[k].x == 0 || items[k].x == 2) {
+        player.hitBox.x = 24;
+      }
+      //if exit is in room 1 or 3 or 5
+      else {
+        player.hitBox.x = 84;
+      }
 
-          player.hitBox.y=32;
-          //if exit is in room 0 or 1
-          if(items[k].y==0){
-            player.viewportY=0;
-          }
-          //if exit is in room 2 or 3
-          else if(items[k].y==7){
-            player.viewportY=64;
-          }
-          //if exit is in room 4 or 5
-          else{
-            player.viewportY=128;
-          }
+      player.hitBox.y = 32;
+      //if exit is in room 0 or 1
+      if (items[k].y == 0) {
+        player.viewportY = 0;
+      }
+      //if exit is in room 2 or 3
+      else if (items[k].y == 7) {
+        player.viewportY = 64;
+      }
+      //if exit is in room 4 or 5
+      else {
+        player.viewportY = 128;
+      }
       return;
     }
   }
@@ -334,10 +329,6 @@ void placeItemInEmptySpot(int i, int j, int floorNumber, char item, int itemWidt
   }
 }
 
-
-
-
-
 void generateHouse() {
 
   initializeItemArray();
@@ -355,27 +346,8 @@ void generateHouse() {
   }
 }
 
-
 int playerAndEnemyInSameRoom(Mob mob) {
-
- /* int sameRoom = 0;
-  Rect pl;
-  pl.x = player.hitBox.x;
-  pl.y = player.hitBox.y + player.viewportY;
-  pl.width = player.hitBox.width;
-  pl.height = player.hitBox.height;
-
-  if (mob.floorNumber == player.floorNumber) {
-    for (int i = 0; i < 6; i++) {
-      if (arduboy.collide(room[i], mob.hitBox) && arduboy.collide(room[i], pl)) {
-        return 1;
-      }
-    }
-  }
-  return 0;*/
-
   return mob.floorNumber == player.floorNumber && mob.roomNumber == player.roomNumber;
-
 }
 
 int borderTouched(Rect playerColl) {
@@ -445,42 +417,40 @@ void setup() {
 }
 
 void generateMobs() {
-  
+
   free(mobs);
   mobs = (Mob *)malloc((2 + numberOfBats) * sizeof(Mob));
 
-  do{
-  mobs[0].hitBox.x = random(0, 2) == 0 ? 26 : 86;
-  mobs[0].hitBox.y = random(12, 170);
-  mobs[0].hitBox.width = 8;
-  mobs[0].hitBox.height = 8;
-  mobs[0].roomCenterY = 0;
-  mobs[0].roomCenterX = 0;
-  mobs[0].floorNumber = random(0, 4);
-  mobs[0].roomNumber = mobRoomNumber(mobs[0]);
-  mobs[0].direction = random(0, 4);
-  mobs[0].mobType = 0;
-  }
-  while(playerAndEnemyInSameRoom(mobs[0]));
+  do {
+    mobs[0].hitBox.x = random(0, 2) == 0 ? 26 : 86;
+    mobs[0].hitBox.y = random(12, 170);
+    mobs[0].hitBox.width = 8;
+    mobs[0].hitBox.height = 8;
+    mobs[0].roomCenterY = 0;
+    mobs[0].roomCenterX = 0;
+    mobs[0].floorNumber = random(0, 4);
+    mobs[0].roomNumber = mobRoomNumber(mobs[0]);
+    mobs[0].direction = random(0, 4);
+    mobs[0].mobType = 0;
+  } while (playerAndEnemyInSameRoom(mobs[0]));
 
- 
-  do{
-  mobs[1].hitBox.x = random(0, 2) == 0 ? 26 : 86;
-  mobs[1].hitBox.y = random(12, 170);
-  mobs[1].hitBox.width = 8;
-  mobs[1].hitBox.height = 7;
-  mobs[1].roomCenterY = 0;
-  mobs[1].roomCenterX = 0;
-  mobs[1].floorNumber = random(0, 4);
-  mobs[1].roomNumber = mobRoomNumber(mobs[1]);
-  mobs[1].direction = random(0, 4);
-  mobs[1].mobType = 1;
-  }
-  while(playerAndEnemyInSameRoom(mobs[1]));
+
+  do {
+    mobs[1].hitBox.x = random(0, 2) == 0 ? 26 : 86;
+    mobs[1].hitBox.y = random(12, 170);
+    mobs[1].hitBox.width = 8;
+    mobs[1].hitBox.height = 7;
+    mobs[1].roomCenterY = 0;
+    mobs[1].roomCenterX = 0;
+    mobs[1].floorNumber = random(0, 4);
+    mobs[1].roomNumber = mobRoomNumber(mobs[1]);
+    mobs[1].direction = random(0, 4);
+    mobs[1].mobType = 1;
+  } while (playerAndEnemyInSameRoom(mobs[1]));
 
 
   for (int i = 2; i < numberOfBats + 2; i++) {
-    do{
+    do {
       mobs[i].hitBox.x = random(0, 2) == 0 ? 26 : 86;
       mobs[i].hitBox.y = random(12, 170);
       mobs[i].hitBox.width = 8;
@@ -491,13 +461,12 @@ void generateMobs() {
       mobs[i].roomNumber = mobRoomNumber(mobs[i]);
       mobs[i].direction = random(0, 4);
       mobs[i].mobType = 2;
-    }
-    while(playerAndEnemyInSameRoom(mobs[i]));
+    } while (playerAndEnemyInSameRoom(mobs[i]));
   }
 }
 
 void newGame() {
-  
+
   // initialize things here
   player.hitBox.width = 8;
   player.hitBox.height = 3;
@@ -557,18 +526,17 @@ int checkCollision(int direction) {
           return 1;
         }
       } else if (level[i][j] == PASSAGE && getSpotValue(i, j, player.floorNumber) == CLOSED_DOOR && !lights && player.itemInUse != KEY) {
-        if(i==3 || i==7 || i==13){
-            obstacle.x = (j * 12) + 11;
-            obstacle.y = i * 12;
-            obstacle.width = 2;
-            obstacle.height = 12;       
-        }   
-        else{
+        if (i == 3 || i == 7 || i == 13) {
+          obstacle.x = (j * 12) + 11;
+          obstacle.y = i * 12;
+          obstacle.width = 2;
+          obstacle.height = 12;
+        } else {
           obstacle.x = j * 12;
           obstacle.y = (i * 12) + 5;
           obstacle.width = 12;
-          obstacle.height = 2;  
-        }             
+          obstacle.height = 2;
+        }
         if (arduboy.collide(playerColl, obstacle)) {
           return 1;
         }
@@ -578,7 +546,7 @@ int checkCollision(int direction) {
             if (!touched) {
               if (player.floorNumber < 3) {
                 player.floorNumber++;
-                sound.tone(NOTE_A1,250,NOTE_E2,250,NOTE_G2,500);
+                sound.tone(NOTE_A1, 250, NOTE_E2, 250, NOTE_G2, 500);
               }
               touched = 1;
             }
@@ -592,7 +560,7 @@ int checkCollision(int direction) {
             if (!touched) {
               if (player.floorNumber > 0) {
                 player.floorNumber--;
-                sound.tone(NOTE_G2,500,NOTE_E2,250,NOTE_A1,250);
+                sound.tone(NOTE_G2, 500, NOTE_E2, 250, NOTE_A1, 250);
               }
               touched = 1;
             }
@@ -698,7 +666,7 @@ void loop() {
     arduboy.print(items[exitIndex].x);
     arduboy.setCursor(30,20);
     arduboy.print(items[exitIndex].y);*/
-  
+
 
     if (arduboy.everyXFrames(4) && toggleMatch) {
       arduboy.fillCircle(player.hitBox.x + 4, player.hitBox.y + 1, 10);
@@ -716,20 +684,18 @@ void loop() {
         if (player.hitBox.y + player.viewportY > (i * 12) - 64 && player.hitBox.y + player.viewportY < (i * 12) + 70 && (lights || player.roomNumber == roomNumberOfCoordinates(i, j) || i == 5 || i == 10 || j == 4 || j == 5)) {
           if (level[i][j] == WALL) {
             if (lights) {
-              if(!color){
+              if (!color) {
                 Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
                 //Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
-              }
-              else{
-                Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);  
+              } else {
+                Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);
               }
             } else {
-              if(color){
+              if (color) {
                 Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
                 //Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
-              }
-              else{
-                Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);  
+              } else {
+                Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);
               }
             }
           } else if (getSpotValue(i, j, player.floorNumber) == EXIT) {
@@ -752,9 +718,9 @@ void loop() {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 8);
               //setSpotValue(i,j, player.floorNumber, itemInUse);
               player.itemInUse = SCEPTER;
-              player.itemInUseW=8;
-              player.itemInUseH=8;
-              sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+              player.itemInUseW = 8;
+              player.itemInUseH = 8;
+              sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
             }
 
             //arduboy.drawRect(player.hitBox.x-3,player.hitBox.y-6,15,15,WHITE);
@@ -772,11 +738,11 @@ void loop() {
               if (player.itemInUse == LEFT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
                 player.itemInUse = LEFT_AND_RIGHT_PART_OF_URN;
-                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+                sound.tone(NOTE_A5, 30, NOTE_A6, 30, NOTE_A6, 30);
               } else if (player.itemInUse == MIDDLE_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
                 player.itemInUse = MIDDLE_AND_RIGHT_PART_OF_URN;
-                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+                sound.tone(NOTE_A5, 30, NOTE_A6, 30, NOTE_A6, 30);
               } else if (player.itemInUse == LEFT_AND_MIDDLE_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
                 player.itemInUse = COMPLETE_URN;
@@ -784,10 +750,10 @@ void loop() {
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 4);
                 player.itemInUse = RIGHT_PART_OF_URN;
-                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+                sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
               }
-              player.itemInUseW=4;
-              player.itemInUseH=4;
+              player.itemInUseW = 4;
+              player.itemInUseH = 4;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == LEFT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -803,11 +769,11 @@ void loop() {
               if (player.itemInUse == RIGHT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
                 player.itemInUse = LEFT_AND_RIGHT_PART_OF_URN;
-                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+                sound.tone(NOTE_A5, 30, NOTE_A6, 30, NOTE_A6, 30);
               } else if (player.itemInUse == MIDDLE_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
                 player.itemInUse = LEFT_AND_MIDDLE_PART_OF_URN;
-                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+                sound.tone(NOTE_A5, 30, NOTE_A6, 30, NOTE_A6, 30);
               } else if (player.itemInUse == MIDDLE_AND_RIGHT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 4);
                 player.itemInUse = COMPLETE_URN;
@@ -815,10 +781,10 @@ void loop() {
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 4);
                 player.itemInUse = LEFT_PART_OF_URN;
-                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+                sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
               }
-              player.itemInUseW=4;
-              player.itemInUseH=4;
+              player.itemInUseW = 4;
+              player.itemInUseH = 4;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == MIDDLE_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -833,11 +799,11 @@ void loop() {
               if (player.itemInUse == RIGHT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
                 player.itemInUse = MIDDLE_AND_RIGHT_PART_OF_URN;
-                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+                sound.tone(NOTE_A5, 30, NOTE_A6, 30, NOTE_A6, 30);
               } else if (player.itemInUse == LEFT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
                 player.itemInUse = LEFT_AND_MIDDLE_PART_OF_URN;
-                sound.tone(NOTE_A5,30,NOTE_A6,30,NOTE_A6,30);
+                sound.tone(NOTE_A5, 30, NOTE_A6, 30, NOTE_A6, 30);
               } else if (player.itemInUse == LEFT_AND_RIGHT_PART_OF_URN) {
                 placeItemInEmptySpot(i, j, player.floorNumber, NO_ITEM, 4, 8);
                 player.itemInUse = COMPLETE_URN;
@@ -845,10 +811,10 @@ void loop() {
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
                 player.itemInUse = MIDDLE_PART_OF_URN;
-                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+                sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
               }
-              player.itemInUseW=4;
-              player.itemInUseH=8;
+              player.itemInUseW = 4;
+              player.itemInUseH = 8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == LEFT_AND_RIGHT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -867,10 +833,10 @@ void loop() {
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
                 player.itemInUse = LEFT_AND_RIGHT_PART_OF_URN;
-                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+                sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
               }
-              player.itemInUseW=4;
-              player.itemInUseH=8;
+              player.itemInUseW = 4;
+              player.itemInUseH = 8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == LEFT_AND_MIDDLE_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -889,10 +855,10 @@ void loop() {
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
                 player.itemInUse = LEFT_AND_MIDDLE_PART_OF_URN;
-                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+                sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
               }
-              player.itemInUseW=4;
-              player.itemInUseH=8;
+              player.itemInUseW = 4;
+              player.itemInUseH = 8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == MIDDLE_AND_RIGHT_PART_OF_URN && toggleMatch) {
             Rect urnHitBox;
@@ -911,10 +877,10 @@ void loop() {
               } else {
                 placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 4, 8);
                 player.itemInUse = MIDDLE_AND_RIGHT_PART_OF_URN;
-                sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
+                sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
               }
-              player.itemInUseW=4;
-              player.itemInUseH=8;
+              player.itemInUseW = 4;
+              player.itemInUseH = 8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == COMPLETE_URN && toggleMatch) {
             Rect urnHitBox;
@@ -928,9 +894,9 @@ void loop() {
             if (arduboy.collide(player.hitBox, urnHitBox)) {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 8);
               player.itemInUse = COMPLETE_URN;
-              sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
-              player.itemInUseW=8;
-              player.itemInUseH=8;
+              sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
+              player.itemInUseW = 8;
+              player.itemInUseH = 8;
             }
           } else if (getSpotValue(i, j, player.floorNumber) == KEY && toggleMatch) {
             Rect keyHitBox;
@@ -945,9 +911,9 @@ void loop() {
             if (arduboy.collide(player.hitBox, keyHitBox)) {
               placeItemInEmptySpot(i, j, player.floorNumber, player.itemInUse, 8, 3);
               player.itemInUse = KEY;
-              sound.tone(NOTE_A4,30,NOTE_B4,30,NOTE_B4,30);
-              player.itemInUseW=8;
-              player.itemInUseH=3;
+              sound.tone(NOTE_A4, 30, NOTE_B4, 30, NOTE_B4, 30);
+              player.itemInUseW = 8;
+              player.itemInUseH = 3;
             }
           }
         }
@@ -957,23 +923,23 @@ void loop() {
     //print white of eyes
     arduboy.fillRect(player.hitBox.x, player.hitBox.y, 3, 3);
     arduboy.fillRect(player.hitBox.x + 5, player.hitBox.y, 3, 3);
-  
+
 
     //arduboy.drawRect(player.hitBox.x,player.hitBox.y,9,3);
     if (player.faint) {
-      
-        if(note<=NOTE_D3){
-          note = random(400, 500);
-        }
-        sound.tone(note-=20,30);      
-        
-        if (arduboy.everyXFrames(5)) {
-          color = (color+1)%2;
-          eyeRollX=(eyeRollX+1)%8;
-          eyeRollY=(eyeRollY+1)%8;
-        }
-        arduboy.fillRect(player.hitBox.x + eyeRoll[eyeRollX], player.hitBox.y + eyeRoll[eyeRollY], 1, 1, BLACK);
-        arduboy.fillRect(player.hitBox.x + 5 + eyeRoll[eyeRollX], player.hitBox.y + eyeRoll[eyeRollY], 1, 1, BLACK);
+
+      if (note <= NOTE_D3) {
+        note = random(400, 500);
+      }
+      sound.tone(note -= 20, 30);
+
+      if (arduboy.everyXFrames(5)) {
+        color = (color + 1) % 2;
+        eyeRollX = (eyeRollX + 1) % 8;
+        eyeRollY = (eyeRollY + 1) % 8;
+      }
+      arduboy.fillRect(player.hitBox.x + eyeRoll[eyeRollX], player.hitBox.y + eyeRoll[eyeRollY], 1, 1, BLACK);
+      arduboy.fillRect(player.hitBox.x + 5 + eyeRoll[eyeRollX], player.hitBox.y + eyeRoll[eyeRollY], 1, 1, BLACK);
       if (!player.cooldown) {
         player.cooldown = 1;
         now = millis();
@@ -982,24 +948,24 @@ void loop() {
       printPlayerEyes();
 
       int moving = 0;
-      
 
-      if (arduboy.pressed(RIGHT_BUTTON) && !arduboy.pressed(LEFT_BUTTON)) {      
-        moving=1; 
+
+      if (arduboy.pressed(RIGHT_BUTTON) && !arduboy.pressed(LEFT_BUTTON)) {
+        moving = 1;
         if (player.hitBox.x < 110 && !checkCollision(3)) {
           player.hitBox.x++;
         }
       }
 
       if (arduboy.pressed(LEFT_BUTTON) && !arduboy.pressed(RIGHT_BUTTON)) {
-        moving=1;
+        moving = 1;
         if (player.hitBox.x > 0 && !checkCollision(1)) {
           player.hitBox.x--;
         }
       }
 
       if (arduboy.pressed(DOWN_BUTTON) && !arduboy.pressed(UP_BUTTON)) {
-        moving=1;
+        moving = 1;
         if (!checkCollision(4)) {
           if (player.hitBox.y < 32 || (player.viewportY == 128 && player.hitBox.y < 61)) {
             player.hitBox.y++;
@@ -1010,8 +976,8 @@ void loop() {
       }
 
       if (arduboy.pressed(UP_BUTTON) && !arduboy.pressed(DOWN_BUTTON)) {
-        moving=1;
-       if (!checkCollision(2)) {
+        moving = 1;
+        if (!checkCollision(2)) {
           if (player.hitBox.y > 32 || (player.viewportY == 0 && player.hitBox.y > 0)) {
             player.hitBox.y--;
           } else if (player.viewportY > 0) {
@@ -1021,19 +987,19 @@ void loop() {
       }
 
       if (arduboy.everyXFrames(10) && !sound.playing() && moving) {
-        sound.tone(NOTE_C1,50);
+        sound.tone(NOTE_C1, 50);
       }
 
-     if (arduboy.justPressed(B_BUTTON) && !toggleMatch) {
+      if (arduboy.justPressed(B_BUTTON) && !toggleMatch) {
         toggleMatch = 1;
         now = millis();
         matchesUsed++;
       }
 
-      if (arduboy.justPressed(A_BUTTON) && NO_ITEM!=player.itemInUse) {
-        placeItemInEmptySpot((player.hitBox.y+player.viewportY)/12, player.hitBox.x/12, player.floorNumber, player.itemInUse, player.itemInUseW, player.itemInUseH);
-        player.itemInUse=NO_ITEM;
-        sound.tone(NOTE_B4,30,NOTE_A4,30,NOTE_A4,30);
+      if (arduboy.justPressed(A_BUTTON) && NO_ITEM != player.itemInUse) {
+        placeItemInEmptySpot((player.hitBox.y + player.viewportY) / 12, player.hitBox.x / 12, player.floorNumber, player.itemInUse, player.itemInUseW, player.itemInUseH);
+        player.itemInUse = NO_ITEM;
+        sound.tone(NOTE_B4, 30, NOTE_A4, 30, NOTE_A4, 30);
       }
     }
 
@@ -1050,17 +1016,44 @@ void loop() {
     tinyfont.print("F");
     tinyfont.setCursor(122, 58);
     tinyfont.print(player.floorNumber + 1);
-    
+
     if (arduboy.everyXFrames(10)) {
       twentyFrames = (twentyFrames + 1) % 2;
     }
 
+    int changeColor = 0;
     for (int i = 0; i < 2 + numberOfBats; i++) {
+      if (playerAndEnemyInSameRoom(mobs[i])) {
+        toggleMatch = 0;
+        changeColor = 1;
+      } 
       moveMob(&mobs[i]);
       printMob(mobs[i], lights);
     }
 
+    if (arduboy.everyXFrames(random(5, 15)) && changeColor) {
+        color = (color + 1) % 2;
+    }
 
+    if(!player.faint){
+      if(changeColor && arduboy.everyXFrames(10)){
+        //suono
+        if (note <= NOTE_D1 || note >= NOTE_C3) {
+          note = random(NOTE_D1, NOTE_D2);
+        }
+        if(color){
+          sound.tone(note -= 20, 200);
+        }
+        else{
+          sound.tone(note += 20, 200);
+        }
+      }
+    else{
+      color=0;
+      }
+    }
+
+  
     /*char d = spider.direction;
 
 
@@ -1113,40 +1106,32 @@ void loop() {
   arduboy.display();
 }
 
-void printPlayerEyes(){
+void printPlayerEyes() {
   if (arduboy.pressed(RIGHT_BUTTON) && arduboy.pressed(UP_BUTTON)) {
     arduboy.fillRect(player.hitBox.x + 2, player.hitBox.y, 1, 1, BLACK);
     arduboy.fillRect(player.hitBox.x + 7, player.hitBox.y, 1, 1, BLACK);
-  }
-  else if (arduboy.pressed(RIGHT_BUTTON) && arduboy.pressed(DOWN_BUTTON)) {
+  } else if (arduboy.pressed(RIGHT_BUTTON) && arduboy.pressed(DOWN_BUTTON)) {
     arduboy.fillRect(player.hitBox.x + 2, player.hitBox.y + 2, 1, 1, BLACK);
     arduboy.fillRect(player.hitBox.x + 7, player.hitBox.y + 2, 1, 1, BLACK);
-  }
-  else if (arduboy.pressed(LEFT_BUTTON) && arduboy.pressed(UP_BUTTON)) {
+  } else if (arduboy.pressed(LEFT_BUTTON) && arduboy.pressed(UP_BUTTON)) {
     arduboy.fillRect(player.hitBox.x, player.hitBox.y, 1, 1, BLACK);
     arduboy.fillRect(player.hitBox.x + 5, player.hitBox.y, 1, 1, BLACK);
-  }
-  else if (arduboy.pressed(LEFT_BUTTON) && arduboy.pressed(DOWN_BUTTON)) {
-    arduboy.fillRect(player.hitBox.x, player.hitBox.y+2, 1, 1, BLACK);
-    arduboy.fillRect(player.hitBox.x + 5, player.hitBox.y+2, 1, 1, BLACK);
-  }
-  else if (arduboy.pressed(RIGHT_BUTTON) && !arduboy.pressed(LEFT_BUTTON)) {
+  } else if (arduboy.pressed(LEFT_BUTTON) && arduboy.pressed(DOWN_BUTTON)) {
+    arduboy.fillRect(player.hitBox.x, player.hitBox.y + 2, 1, 1, BLACK);
+    arduboy.fillRect(player.hitBox.x + 5, player.hitBox.y + 2, 1, 1, BLACK);
+  } else if (arduboy.pressed(RIGHT_BUTTON) && !arduboy.pressed(LEFT_BUTTON)) {
     arduboy.fillRect(player.hitBox.x + 2, player.hitBox.y + 1, 1, 1, BLACK);
     arduboy.fillRect(player.hitBox.x + 7, player.hitBox.y + 1, 1, 1, BLACK);
-  }
-  else if (arduboy.pressed(LEFT_BUTTON) && !arduboy.pressed(RIGHT_BUTTON)) {
+  } else if (arduboy.pressed(LEFT_BUTTON) && !arduboy.pressed(RIGHT_BUTTON)) {
     arduboy.fillRect(player.hitBox.x, player.hitBox.y + 1, 1, 1, BLACK);
     arduboy.fillRect(player.hitBox.x + 5, player.hitBox.y + 1, 1, 1, BLACK);
-  }
-  else if (arduboy.pressed(DOWN_BUTTON) && !arduboy.pressed(UP_BUTTON)) {
+  } else if (arduboy.pressed(DOWN_BUTTON) && !arduboy.pressed(UP_BUTTON)) {
     arduboy.fillRect(player.hitBox.x + 1, player.hitBox.y + 2, 1, 1, BLACK);
     arduboy.fillRect(player.hitBox.x + 6, player.hitBox.y + 2, 1, 1, BLACK);
-  }
-  else  if (arduboy.pressed(UP_BUTTON) && !arduboy.pressed(DOWN_BUTTON)) {
+  } else if (arduboy.pressed(UP_BUTTON) && !arduboy.pressed(DOWN_BUTTON)) {
     arduboy.fillRect(player.hitBox.x + 1, player.hitBox.y, 1, 1, BLACK);
     arduboy.fillRect(player.hitBox.x + 6, player.hitBox.y, 1, 1, BLACK);
-  }
-  else{
+  } else {
     arduboy.fillRect(player.hitBox.x + 1, player.hitBox.y + 1, 1, 1, BLACK);
     arduboy.fillRect(player.hitBox.x + 6, player.hitBox.y + 1, 1, 1, BLACK);
   }
@@ -1234,7 +1219,7 @@ void getNextDirection(Mob *mob) {
         || (mob->roomNumber == 5 && rnd == DOWN && getSpotValue(10, 7, mob->floorNumber) == 'l')
         || (mob->roomNumber == 4 && rnd == RIGHT && getSpotValue(13, 4, mob->floorNumber) == 'l')
         || (mob->roomNumber == 5 && rnd == LEFT && getSpotValue(13, 5, mob->floorNumber) == 'l')*/
-        ) {
+    ) {
       rnd = random(0, 4);
     } else {
       flag = 0;
@@ -1250,8 +1235,6 @@ void moveMob(Mob *mob) {
   mob->roomNumber = mobRoomNumber(*mob);
 
   if (playerAndEnemyInSameRoom(*mob) && (player.itemInUse != SCEPTER || mob->mobType == 1) && !player.faint) {
-    toggleMatch = 0;
-
     mob->roomCenterX = 0;
     mob->roomCenterY = 0;
 
@@ -1274,7 +1257,7 @@ void moveMob(Mob *mob) {
       pl.width = player.hitBox.width;
       pl.height = player.hitBox.height;
 
-      //if enemy collides player 
+      //if enemy collides player
       if (arduboy.collide(pl, mob->hitBox) && !player.faint) {
         player.faint = 1;
         player.lives--;
