@@ -42,6 +42,7 @@ struct Item {
 struct Room {
   int floorNumber;
   int roomNumber;
+  int reachable;
 };
 
 
@@ -85,7 +86,10 @@ int eyeRollY = 6;
 int note = 190;
 Mob *mobs;
 Rect room[6];
+int stanza[6][4];
 Player player;
+int menuPosition = 0;
+int xFrame=0;
 
 void printItemInUse(Player player) {
   if (player.itemInUse == SCEPTER) {
@@ -332,6 +336,7 @@ void placeItemInEmptySpot(int i, int j, int floorNumber, char item, int itemWidt
 void generateHouse() {
 
   initializeItemArray();
+  generateStanze();
   generateExit();
   generateStartingPoint();
   generateScepter();
@@ -343,6 +348,14 @@ void generateHouse() {
   if (!lights) {
     generateDoors();
     generateKey();
+  }
+}
+
+void generateStanze() {
+  for (int piano = 0; piano < 4; piano++) {
+    for (int stz = 0; stz < 6; stz++) {
+      stanza[stz][piano] = 0;
+    }
   }
 }
 
@@ -588,37 +601,67 @@ void loop() {
   arduboy.pollButtons();
 
   if (gamePhase == 0) {
+    if(arduboy.everyXFrames(20)){
+       xFrame=(xFrame+1)%2;
+    }
+   
     arduboy.print("Cursed Mansion 1300");
-    arduboy.setCursor(20, 20);
-    arduboy.print("Press A to play!");
-    arduboy.setCursor(0, 30);
+    if (menuPosition == 0) {
+      Sprites::drawOverwrite(0, 35, batIcon, xFrame);
+    } else {
+      Sprites::drawOverwrite(0, 35, batIcon, 0);
+    }
+    arduboy.setCursor(12, 35);
     arduboy.print("Number of bats");
-    arduboy.setCursor(100, 30);
+    arduboy.setCursor(100, 35);
     arduboy.print(numberOfBats);
-    arduboy.setCursor(0, 40);
+    if (menuPosition == 1) {
+      Sprites::drawOverwrite(1, 44, candleIcon, xFrame);
+    } else {
+      Sprites::drawOverwrite(1, 44, candleIcon, 0);
+    }
+    arduboy.setCursor(12, 45);
     arduboy.print("Lights");
-    arduboy.setCursor(100, 40);
+    arduboy.setCursor(100, 45);
     if (lights) {
       arduboy.print("On");
     } else {
       arduboy.print("Off");
     }
+     if (menuPosition == 2) {
+      Sprites::drawOverwrite(0, 54, doorIcon, xFrame);
+    } else {
+      Sprites::drawOverwrite(0, 54, doorIcon, 0);
+    }
+    arduboy.setCursor(12, 55);
+    arduboy.print("Play!");
 
-
-    if (arduboy.justPressed(RIGHT_BUTTON)) {
-      numberOfBats = (numberOfBats + 1) % 4;
-      if (numberOfBats == 0) {
-        numberOfBats++;
+    if (arduboy.justPressed(DOWN_BUTTON)) {
+      menuPosition = (menuPosition + 1) % 3;
+    }
+    if (arduboy.justPressed(UP_BUTTON)) {
+      menuPosition--;
+      if(menuPosition<0){
+        menuPosition=2;
       }
     }
 
-    if (arduboy.justPressed(LEFT_BUTTON)) {
-      lights = (lights + 1) % 2;
-    }
+
 
     if (arduboy.justPressed(A_BUTTON)) {
-      newGame();
-      gamePhase = 1;
+      if (menuPosition == 0) {
+        numberOfBats = (numberOfBats + 1) % 4;
+        if (numberOfBats == 0) {
+          numberOfBats++;
+        }
+      }
+      if (menuPosition == 1) {
+        lights = (lights + 1) % 2;
+      }
+      if (menuPosition == 2) {
+        newGame();
+        gamePhase = 1;
+      }
     }
   } else if (gamePhase == 1) {
     if (toggleMatch && millis() >= now + 20000) {
@@ -662,10 +705,21 @@ void loop() {
 
     //DEBUG
     /*arduboy.print(1);*/
-    /*arduboy.setCursor(30,10);
-    arduboy.print(items[exitIndex].x);
-    arduboy.setCursor(30,20);
+    arduboy.setCursor(30, 10);
+    arduboy.print(mobs[0].roomNumber);
+    /*arduboy.setCursor(30,20);
     arduboy.print(items[exitIndex].y);*/
+
+    if (mobs[0].direction == 0) {
+      arduboy.print('r');
+    } else if (mobs[0].direction == 1) {
+      arduboy.print('l');
+    } else if (mobs[0].direction == 2) {
+      arduboy.print('u');
+    } else if (mobs[0].direction == 3) {
+      arduboy.print('d');
+    }
+
 
 
     if (arduboy.everyXFrames(4) && toggleMatch) {
@@ -1180,24 +1234,24 @@ void goToDirection(Mob *mob) {
   } else if (mob->direction == LEFT) {
     mob->hitBox.x--;
   } else if (mob->direction == UP) {
-    mob->hitBox.y++;
-  } else if (mob->direction == DOWN) {
     mob->hitBox.y--;
+  } else if (mob->direction == DOWN) {
+    mob->hitBox.y++;
   }
 }
 
 void getNextDirection(Mob *mob) {
   int flag = 1;
   int rnd = random(0, 4);
-  while (flag==1) {
+  while (flag == 1) {
     if ((mob->roomNumber == 0 && rnd == LEFT) || (mob->roomNumber == 1 && rnd == RIGHT)
         || (mob->roomNumber == 4 && rnd == LEFT) || (mob->roomNumber == 5 && rnd == RIGHT)
-        || (mob->roomNumber == 0 && rnd == UP && getSpotValue(0, 2, mob->floorNumber) == (NO_ITEM || EXIT))
-        || (mob->roomNumber == 1 && rnd == UP && getSpotValue(0, 7, mob->floorNumber) == (NO_ITEM || EXIT))
-        || (mob->roomNumber == 2 && rnd == LEFT && getSpotValue(7, 0, mob->floorNumber) == (NO_ITEM || EXIT))
-        || (mob->roomNumber == 3 && rnd == RIGHT && getSpotValue(7, 9, mob->floorNumber) == (NO_ITEM || EXIT))
-        || (mob->roomNumber == 4 && rnd == DOWN && getSpotValue(15, 2, mob->floorNumber) == (NO_ITEM || EXIT))
-        || (mob->roomNumber == 5 && rnd == DOWN && getSpotValue(15, 7, mob->floorNumber) == (NO_ITEM || EXIT))
+        || (mob->roomNumber == 0 && rnd == UP && (getSpotValue(0, 2, mob->floorNumber) == NO_ITEM || getSpotValue(0, 2, mob->floorNumber) == EXIT))
+        || (mob->roomNumber == 1 && rnd == UP && (getSpotValue(0, 7, mob->floorNumber) == NO_ITEM || getSpotValue(0, 7, mob->floorNumber) == EXIT))
+        || (mob->roomNumber == 2 && rnd == LEFT && (getSpotValue(7, 0, mob->floorNumber) == NO_ITEM || getSpotValue(7, 0, mob->floorNumber) == EXIT))
+        || (mob->roomNumber == 3 && rnd == RIGHT && (getSpotValue(7, 9, mob->floorNumber) == NO_ITEM || getSpotValue(7, 9, mob->floorNumber) == EXIT))
+        || (mob->roomNumber == 4 && rnd == DOWN && (getSpotValue(15, 2, mob->floorNumber) == NO_ITEM || getSpotValue(15, 2, mob->floorNumber) == EXIT))
+        || (mob->roomNumber == 5 && rnd == DOWN && (getSpotValue(15, 7, mob->floorNumber) == NO_ITEM || getSpotValue(15, 7, mob->floorNumber) == EXIT))
         /*|| (mob->roomNumber == 0 && rnd == RIGHT && getSpotValue(3, 4, mob->floorNumber) == 'l')
         || (mob->roomNumber == 1 && rnd == LEFT && getSpotValue(3, 5, mob->floorNumber) == 'l')
         || (mob->roomNumber == 0 && rnd == UP && getSpotValue(5, 2, mob->floorNumber) == 'l')
@@ -1225,7 +1279,7 @@ void isEveryRoomReachable() {
 }
 
 void moveMob(Mob *mob) {
-  mob->roomNumber = mobRoomNumber(*mob);
+  //mob->roomNumber = mobRoomNumber(*mob);
 
   if (playerAndEnemyInSameRoom(*mob) && (player.itemInUse != SCEPTER || mob->mobType == 1) && !player.faint) {
     mob->roomCenterX = 0;
@@ -1270,8 +1324,6 @@ void moveMob(Mob *mob) {
   } else if (mob->roomCenterX == 1 && mob->roomCenterY == 1) {
 
     if (arduboy.everyXFrames(4)) {
-
-      goToDirection(mob);
       //if mob hits the borderk aka change floor
       if (mob->hitBox.x <= 0 || mob->hitBox.x >= 110 || mob->hitBox.y <= 0 || mob->hitBox.y >= 184) {
         if (getSpotValue(mob->hitBox.y / 12, mob->hitBox.x / 12, mob->floorNumber) == STAIRS_UP) {
@@ -1285,11 +1337,13 @@ void moveMob(Mob *mob) {
       }
       //if mob changes room
       if (mobRoomNumber(*mob) != mob->roomNumber) {
+
         mob->roomCenterX = 0;
         mob->roomCenterY = 0;
         mob->roomNumber = mobRoomNumber(*mob);
         getNextDirection(mob);
       }
+      goToDirection(mob);
     }
   } else {
     if (arduboy.everyXFrames(4)) {
