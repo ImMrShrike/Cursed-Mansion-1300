@@ -189,7 +189,6 @@ void generateExit() {
 
 void generateStartingPoint() {
   player.floorNumber = 0;
-  player.roomNumber = playerRoomNumber();
   for (int k = 0; k < MAX_NUMBER_OF_ITEMS_IN_HOUSE; k++) {
     if (items[k].value = EXIT) {
       //if exit is in room 0 or 2 or 4
@@ -217,6 +216,7 @@ void generateStartingPoint() {
       return;
     }
   }
+  player.roomNumber = playerRoomNumber();
 }
 
 void generateScepter() {
@@ -473,7 +473,7 @@ void newGame() {
   player.lives = 9;
   player.faint = 0;
   player.cooldown = 0;
-  player.itemInUse = NO_ITEM;
+  player.itemInUse = SCEPTER;  //NO_ITEM;
 
   generateHouse();
 
@@ -1026,34 +1026,28 @@ void loop() {
       if (playerAndEnemyInSameRoom(mobs[i])) {
         toggleMatch = 0;
         changeColor = 1;
-      } 
+      }
       moveMob(&mobs[i]);
       printMob(mobs[i], lights);
     }
 
-    if (arduboy.everyXFrames(random(5, 15)) && changeColor) {
-        color = (color + 1) % 2;
-    }
-
-    if(!player.faint){
-      if(changeColor && arduboy.everyXFrames(10)){
-        //suono
-        if (note <= NOTE_D1 || note >= NOTE_C3) {
-          note = random(NOTE_D1, NOTE_D2);
-        }
-        if(color){
+    if (!player.faint) {
+      if (changeColor) {
+        if (arduboy.everyXFrames(random(8, 10))) {
+          color = (color + 1) % 2;
+          if (note <= NOTE_C2 || note >= NOTE_G2) {
+            note = random(NOTE_C2, NOTE_G2);
+          }
           sound.tone(note -= 20, 200);
         }
-        else{
-          sound.tone(note += 20, 200);
-        }
-      }
-    else{
-      color=0;
+      } else {
+        color = 0;
       }
     }
 
-  
+
+
+
     /*char d = spider.direction;
 
 
@@ -1075,7 +1069,6 @@ void loop() {
     /*tinyfont.print(spider.hitBox.x);
     tinyfont.setCursor(80, 56);
     tinyfont.print(spider.hitBox.y);*/
-
   }
   //game phase 2
   else if (gamePhase == 2) {
@@ -1196,7 +1189,7 @@ void goToDirection(Mob *mob) {
 void getNextDirection(Mob *mob) {
   int flag = 1;
   int rnd = random(0, 4);
-  while (flag) {
+  while (flag==1) {
     if ((mob->roomNumber == 0 && rnd == LEFT) || (mob->roomNumber == 1 && rnd == RIGHT)
         || (mob->roomNumber == 4 && rnd == LEFT) || (mob->roomNumber == 5 && rnd == RIGHT)
         || (mob->roomNumber == 0 && rnd == UP && getSpotValue(0, 2, mob->floorNumber) == (NO_ITEM || EXIT))
