@@ -86,10 +86,10 @@ int eyeRollY = 6;
 int note = 190;
 Mob *mobs;
 Rect room[6];
-int stanza[6][4];
+//int stanza[6][4];
 Player player;
 int menuPosition = 0;
-int xFrame=0;
+int xFrame = 0;
 
 void printItemInUse(Player player) {
   if (player.itemInUse == SCEPTER) {
@@ -291,6 +291,12 @@ void generateStairs() {
 }
 
 void generateDoors() {
+  for (int i = 0; i < MAX_NUMBER_OF_ITEMS_IN_HOUSE; i++) {
+    if (items[i].value == CLOSED_DOOR) {
+      items[i].value = NO_ITEM;
+    }
+  }
+
   for (int flr = 0; flr < 4; flr++) {
     //generate doors up (up to five)
     int loop = random(1, 6);
@@ -336,7 +342,7 @@ void placeItemInEmptySpot(int i, int j, int floorNumber, char item, int itemWidt
 void generateHouse() {
 
   initializeItemArray();
-  generateStanze();
+  //generateStanze();
   generateExit();
   generateStartingPoint();
   generateScepter();
@@ -346,18 +352,21 @@ void generateHouse() {
   generateStairs();
   generateMobs();
   if (!lights) {
-    generateDoors();
+    do {
+      generateDoors();
+    } while (!isEveryRoomReachable());
+
     generateKey();
   }
 }
 
-void generateStanze() {
+/*void generateStanze() {
   for (int piano = 0; piano < 4; piano++) {
     for (int stz = 0; stz < 6; stz++) {
       stanza[stz][piano] = 0;
     }
   }
-}
+}*/
 
 int playerAndEnemyInSameRoom(Mob mob) {
   return mob.floorNumber == player.floorNumber && mob.roomNumber == player.roomNumber;
@@ -601,10 +610,10 @@ void loop() {
   arduboy.pollButtons();
 
   if (gamePhase == 0) {
-    if(arduboy.everyXFrames(20)){
-       xFrame=(xFrame+1)%2;
+    if (arduboy.everyXFrames(20)) {
+      xFrame = (xFrame + 1) % 2;
     }
-   
+
     arduboy.print("Cursed Mansion 1300");
     if (menuPosition == 0) {
       Sprites::drawOverwrite(0, 35, batIcon, xFrame);
@@ -628,7 +637,7 @@ void loop() {
     } else {
       arduboy.print("Off");
     }
-     if (menuPosition == 2) {
+    if (menuPosition == 2) {
       Sprites::drawOverwrite(0, 54, doorIcon, xFrame);
     } else {
       Sprites::drawOverwrite(0, 54, doorIcon, 0);
@@ -641,8 +650,8 @@ void loop() {
     }
     if (arduboy.justPressed(UP_BUTTON)) {
       menuPosition--;
-      if(menuPosition<0){
-        menuPosition=2;
+      if (menuPosition < 0) {
+        menuPosition = 2;
       }
     }
 
@@ -1275,7 +1284,38 @@ void getNextDirection(Mob *mob) {
   mob->direction = rnd;
 }
 
-void isEveryRoomReachable() {
+int isEveryRoomReachable() {
+  Room reachableRoom[24];
+  for (int i = 0; i < 24; i++) {
+    reachableRoom[i].floorNumber = -1;
+    reachableRoom[i].roomNumber = -1;
+  }
+  reachableRoom[0].roomNumber = findExitRoomNumber();
+  reachableRoom[0].floorNumber = 0;
+  for (int i = 0; i < 24; i++) {
+    for (int j = 0; j < MAX_NUMBER_OF_ITEMS_IN_HOUSE; j++) {
+      if (items[j].value == CLOSED_DOOR && items[j].floorNumber == reachableRoom[i].floorNumber) {
+      }
+      if (((items[j].value == STAIRS_UP && items[j].floorNumber + 1 == reachableRoom[i].floorNumber) || 
+          (items[j].value == STAIRS_DOWN && items[j].floorNumber - 1 == reachableRoom[i].floorNumber))
+          && reachableRoom[i].roomNumber == getRoomNumberByCoordinates(items[j].x, items[j].y)) {
+            addRoomToReachables(getRoomNumberByCoordinates(items[j].x, items[j].y)), items[j].floorNumber);
+      }
+    }
+  }
+  return 0;
+}
+
+int findExitRoomNumber() {
+  for (int i = 0; i < MAX_NUMBER_OF_ITEMS_IN_HOUSE; i++) {
+    if (items[i].value == EXIT) {
+      return items[i].roomNumber;
+    }
+  }
+  return 0;
+}
+
+int getRoomNumberByCoordinates(int x, int y) {
 }
 
 void moveMob(Mob *mob) {
