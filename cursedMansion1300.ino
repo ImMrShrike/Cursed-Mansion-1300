@@ -42,7 +42,7 @@ struct Item {
 struct Room {
   int floorNumber;
   int roomNumber;
-  int reachable;
+  int adjacent[3];
 };
 
 
@@ -78,6 +78,7 @@ unsigned long initTime = 0;
 unsigned long endTime = 0;
 int lights = 1;
 int numberOfBats = 1;
+int newGfx = 1;
 int gamePhase = 0;
 int color = 0;
 int eyeRoll[8] = { 0, 1, 2, 2, 2, 1, 0, 0 };
@@ -86,7 +87,6 @@ int eyeRollY = 6;
 int note = 190;
 Mob *mobs;
 Rect room[6];
-//int stanza[6][4];
 Player player;
 int menuPosition = 0;
 int xFrame = 0;
@@ -495,7 +495,7 @@ void newGame() {
   player.lives = 9;
   player.faint = 0;
   player.cooldown = 0;
-  player.itemInUse = SCEPTER;  //NO_ITEM;
+  player.itemInUse = NO_ITEM;
 
   generateHouse();
 
@@ -614,48 +614,81 @@ void loop() {
       xFrame = (xFrame + 1) % 2;
     }
 
-    arduboy.print("Cursed Mansion 1300");
+    Sprites::drawOverwrite(0, 0, startScreen, 2);
+    for (int i = 1; i < 14; i++) {
+      Sprites::drawOverwrite(8 * i, 0, startScreen, 1);
+      Sprites::drawOverwrite(8 * i, 56, startScreen, 1);
+    }
+    Sprites::drawOverwrite(112, 0, startScreen, 3);
+
+    for (int i = 1; i < 7; i++) {
+      Sprites::drawOverwrite(1, (i * 8) - 1, startScreen, 0);
+      Sprites::drawOverwrite(111, (i * 8) - 1, startScreen, 0);
+    }
+
+    Sprites::drawOverwrite(0, 55, startScreen, 4);
+    Sprites::drawOverwrite(112, 55, startScreen, 5);
+
+
+    arduboy.setCursor(18, 8);
+    arduboy.print("Cursed Mansion");
+    arduboy.setCursor(32, 18);
+    arduboy.print("+ 1300 +");
+
     if (menuPosition == 0) {
-      Sprites::drawOverwrite(0, 35, batIcon, xFrame);
+      Sprites::drawOverwrite(16, 28, batIcon, xFrame);
     } else {
-      Sprites::drawOverwrite(0, 35, batIcon, 0);
+      Sprites::drawOverwrite(16, 28, batIcon, 0);
     }
-    arduboy.setCursor(12, 35);
-    arduboy.print("Number of bats");
-    arduboy.setCursor(100, 35);
+    arduboy.setCursor(30, 28);
+    arduboy.print("Bats");
+    arduboy.setCursor(85, 28);
     arduboy.print(numberOfBats);
+
     if (menuPosition == 1) {
-      Sprites::drawOverwrite(1, 44, candleIcon, xFrame);
+      Sprites::drawOverwrite(17, 37, candleIcon, xFrame);
     } else {
-      Sprites::drawOverwrite(1, 44, candleIcon, 0);
+      Sprites::drawOverwrite(17, 37, candleIcon, 0);
     }
-    arduboy.setCursor(12, 45);
+    arduboy.setCursor(30, 38);
     arduboy.print("Lights");
-    arduboy.setCursor(100, 45);
+    arduboy.setCursor(85, 38);
     if (lights) {
       arduboy.print("On");
     } else {
       arduboy.print("Off");
     }
+
     if (menuPosition == 2) {
-      Sprites::drawOverwrite(0, 54, doorIcon, xFrame);
+      Sprites::drawOverwrite(16, 47, gfx, xFrame);
     } else {
-      Sprites::drawOverwrite(0, 54, doorIcon, 0);
+      Sprites::drawOverwrite(16, 47, gfx, 0);
     }
-    arduboy.setCursor(12, 55);
+
+    arduboy.setCursor(30, 48);
+    if (newGfx) {
+      arduboy.print("New Gfx");
+    } else {
+      arduboy.print("Old Gfx");
+    }
+
+    if (menuPosition == 3) {
+      Sprites::drawOverwrite(73, 47, doorIcon, xFrame);
+    } else {
+      Sprites::drawOverwrite(73, 47, doorIcon, 0);
+    }
+    arduboy.setCursor(83, 48);
     arduboy.print("Play!");
 
     if (arduboy.justPressed(DOWN_BUTTON)) {
-      menuPosition = (menuPosition + 1) % 3;
+      menuPosition = (menuPosition + 1) % 4;
     }
     if (arduboy.justPressed(UP_BUTTON)) {
       menuPosition--;
       if (menuPosition < 0) {
-        menuPosition = 2;
+        menuPosition = 3;
       }
     }
-
-
 
     if (arduboy.justPressed(A_BUTTON)) {
       if (menuPosition == 0) {
@@ -668,6 +701,9 @@ void loop() {
         lights = (lights + 1) % 2;
       }
       if (menuPosition == 2) {
+        newGfx = (newGfx + 1) % 2;
+      }
+      if (menuPosition == 3) {
         newGame();
         gamePhase = 1;
       }
@@ -749,14 +785,23 @@ void loop() {
             if (lights) {
               if (!color) {
                 Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
-                //Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
+                /*if (newGfx) {
+                  Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
+                } else {
+                  Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
+                }*/
+
               } else {
                 Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);
               }
             } else {
               if (color) {
                 Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
-                //Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
+                /*if (newGfx) {
+                  Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
+                } else {
+                  Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
+                }*/
               } else {
                 Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);
               }
@@ -764,9 +809,31 @@ void loop() {
           } else if (getSpotValue(i, j, player.floorNumber) == EXIT) {
             Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, exitBlock, 0);
           } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_UP) {
-            Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, up, 0);
+            if (i == 0) {
+              Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 1);
+            }
+            if (i == 15) {
+              Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 0);
+            }
+            if (j == 0) {
+              Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 3);
+            }
+            if (j == 9) {
+              Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 2);
+            }
           } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_DOWN) {
-            Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, down, 0);
+            if (i == 0) {
+              Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 0);
+            }
+            if (i == 15) {
+              Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 1);
+            }
+            if (j == 0) {
+              Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 2);
+            }
+            if (j == 9) {
+              Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 3);
+            }
           } else if (getSpotValue(i, j, player.floorNumber) == SCEPTER && toggleMatch) {
             Rect scepterHitBox;
             scepterHitBox.x = 12 * j + 2;
@@ -1261,21 +1328,20 @@ void getNextDirection(Mob *mob) {
         || (mob->roomNumber == 3 && rnd == RIGHT && (getSpotValue(7, 9, mob->floorNumber) == NO_ITEM || getSpotValue(7, 9, mob->floorNumber) == EXIT))
         || (mob->roomNumber == 4 && rnd == DOWN && (getSpotValue(15, 2, mob->floorNumber) == NO_ITEM || getSpotValue(15, 2, mob->floorNumber) == EXIT))
         || (mob->roomNumber == 5 && rnd == DOWN && (getSpotValue(15, 7, mob->floorNumber) == NO_ITEM || getSpotValue(15, 7, mob->floorNumber) == EXIT))
-        /*|| (mob->roomNumber == 0 && rnd == RIGHT && getSpotValue(3, 4, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 1 && rnd == LEFT && getSpotValue(3, 5, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 0 && rnd == UP && getSpotValue(5, 2, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 2 && rnd == DOWN && getSpotValue(5, 2, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 1 && rnd == UP && getSpotValue(5, 7, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 3 && rnd == DOWN && getSpotValue(5, 7, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 2 && rnd == RIGHT && getSpotValue(7, 4, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 3 && rnd == LEFT && getSpotValue(7, 5, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 2 && rnd == UP && getSpotValue(10, 2, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 4 && rnd == DOWN && getSpotValue(10, 2, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 3 && rnd == UP && getSpotValue(10, 7, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 5 && rnd == DOWN && getSpotValue(10, 7, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 4 && rnd == RIGHT && getSpotValue(13, 4, mob->floorNumber) == 'l')
-        || (mob->roomNumber == 5 && rnd == LEFT && getSpotValue(13, 5, mob->floorNumber) == 'l')*/
-    ) {
+        || (mob->roomNumber == 0 && rnd == RIGHT && getSpotValue(4, 3, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 1 && rnd == LEFT && getSpotValue(4, 3, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 0 && rnd == UP && getSpotValue(2, 5, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 2 && rnd == DOWN && getSpotValue(2, 5, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 1 && rnd == UP && getSpotValue(7, 5, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 3 && rnd == DOWN && getSpotValue(7, 5, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 2 && rnd == RIGHT && getSpotValue(4, 7, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 3 && rnd == LEFT && getSpotValue(4, 7, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 2 && rnd == UP && getSpotValue(2, 10, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 4 && rnd == DOWN && getSpotValue(2, 10, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 3 && rnd == UP && getSpotValue(7, 10, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 5 && rnd == DOWN && getSpotValue(7, 10, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 4 && rnd == RIGHT && getSpotValue(4, 13, mob->floorNumber) == CLOSED_DOOR)
+        || (mob->roomNumber == 5 && rnd == LEFT && getSpotValue(4, 13, mob->floorNumber) == CLOSED_DOOR)) {
       rnd = random(0, 4);
     } else {
       flag = 0;
@@ -1293,15 +1359,150 @@ int isEveryRoomReachable() {
   reachableRoom[0].roomNumber = findExitRoomNumber();
   reachableRoom[0].floorNumber = 0;
   for (int i = 0; i < 24; i++) {
+
+    if (reachableRoom[i].roomNumber == -1) {
+      return 0;
+    }
+
+    if (reachableRoom[i].roomNumber == 0) {
+      reachableRoom[i].adjacent[0] = 1;
+      reachableRoom[i].adjacent[1] = 2;
+      reachableRoom[i].adjacent[2] = -1;
+    }
+    if (reachableRoom[i].roomNumber == 1) {
+      reachableRoom[i].adjacent[0] = 0;
+      reachableRoom[i].adjacent[1] = 3;
+      reachableRoom[i].adjacent[2] = -1;
+    }
+    if (reachableRoom[i].roomNumber == 2) {
+      reachableRoom[i].adjacent[0] = 0;
+      reachableRoom[i].adjacent[1] = 3;
+      reachableRoom[i].adjacent[2] = 4;
+    }
+    if (reachableRoom[i].roomNumber == 3) {
+      reachableRoom[i].adjacent[0] = 1;
+      reachableRoom[i].adjacent[1] = 2;
+      reachableRoom[i].adjacent[2] = 5;
+    }
+    if (reachableRoom[i].roomNumber == 4) {
+      reachableRoom[i].adjacent[0] = 2;
+      reachableRoom[i].adjacent[1] = 5;
+      reachableRoom[i].adjacent[2] = -1;
+    }
+    if (reachableRoom[i].roomNumber == 5) {
+      reachableRoom[i].adjacent[0] = 3;
+      reachableRoom[i].adjacent[1] = 4;
+      reachableRoom[i].adjacent[2] = -1;
+    }
     for (int j = 0; j < MAX_NUMBER_OF_ITEMS_IN_HOUSE; j++) {
       if (items[j].value == CLOSED_DOOR && items[j].floorNumber == reachableRoom[i].floorNumber) {
+        int *adj = roomsDividedByDoor(items[j].x, items[j].y);
+        if (adj[0] == reachableRoom[i].roomNumber || adj[1] == reachableRoom[i].roomNumber) {
+          for (int k = 0; k < 2; k++) {
+            for (int l = 0; l < 3; l++) {
+              if (adj[k] == reachableRoom[i].adjacent[l]) {
+                reachableRoom[i].adjacent[l] = -1;
+              }
+            }
+          }
+        }
       }
-      if (((items[j].value == STAIRS_UP && items[j].floorNumber + 1 == reachableRoom[i].floorNumber) || 
-          (items[j].value == STAIRS_DOWN && items[j].floorNumber - 1 == reachableRoom[i].floorNumber))
-          && reachableRoom[i].roomNumber == getRoomNumberByCoordinates(items[j].x, items[j].y)) {
-            addRoomToReachables(getRoomNumberByCoordinates(items[j].x, items[j].y)), items[j].floorNumber);
+      int roomNumber = getRoomNumberByCoordinates(items[j].x, items[j].y);
+      if (((items[j].value == STAIRS_UP && items[j].floorNumber + 1 == reachableRoom[i].floorNumber) || (items[j].value == STAIRS_DOWN && items[j].floorNumber - 1 == reachableRoom[i].floorNumber))
+          && reachableRoom[i].roomNumber == roomNumber) {
+        int found = 0;
+        int index = -1;
+        for (int k = 0; k < 24; k++) {
+          if (reachableRoom[k].roomNumber == reachableRoom[i].roomNumber && reachableRoom[k].floorNumber == reachableRoom[i].floorNumber) {
+            found = 1;
+          }
+          if (reachableRoom[k].roomNumber == -1 && index == -1) {
+            index = k;
+          }
+        }
+        if (!found) {
+          reachableRoom[index].roomNumber = reachableRoom[i].roomNumber;
+          reachableRoom[index].floorNumber = reachableRoom[i].floorNumber;
+        }
       }
     }
+
+    for (int l = 0; l < 3; l++) {
+      if (reachableRoom[i].adjacent[l] != -1) {
+        int found = 0;
+        int index = -1;
+        for (int k = 0; k < 24; k++) {
+          if (reachableRoom[k].roomNumber == reachableRoom[i].adjacent[l] && reachableRoom[k].floorNumber == reachableRoom[i].floorNumber) {
+            found = 1;
+          }
+          if (reachableRoom[k].roomNumber == -1 && index == -1) {
+            index = k;
+          }
+        }
+        if (!found) {
+          reachableRoom[index].roomNumber = reachableRoom[i].adjacent[l];
+          reachableRoom[index].floorNumber = reachableRoom[i].floorNumber;
+        }
+      }
+    }
+  }
+  if (reachableRoom[23].roomNumber != -1) {
+    return 1;
+  }
+  return 0;
+}
+
+int *roomsDividedByDoor(int x, int y) {
+  int output[2];
+  if (x == 4 && y == 3) {
+    output[0] = 0;
+    output[1] = 1;
+  }
+  if (x == 2 && y == 5) {
+    output[0] = 0;
+    output[1] = 2;
+  }
+  if (x == 7 && y == 5) {
+    output[0] = 1;
+    output[1] = 3;
+  }
+  if (x == 4 && y == 7) {
+    output[0] = 2;
+    output[1] = 3;
+  }
+  if (x == 2 && y == 10) {
+    output[0] = 2;
+    output[1] = 4;
+  }
+  if (x == 7 && y == 10) {
+    output[0] = 3;
+    output[1] = 5;
+  }
+  if (x == 4 && y == 13) {
+    output[0] = 4;
+    output[1] = 5;
+  }
+  return output;
+}
+
+int getRoomNumberByCoordinates(int x, int y) {
+  if (x == 0 && y == 2) {
+    return 0;
+  }
+  if (x == 0 && y == 7) {
+    return 1;
+  }
+  if (x == 7 && y == 0) {
+    return 2;
+  }
+  if (x == 7 && y == 9) {
+    return 3;
+  }
+  if (x == 15 && y == 2) {
+    return 4;
+  }
+  if (x == 15 && y == 7) {
+    return 5;
   }
   return 0;
 }
@@ -1309,13 +1510,10 @@ int isEveryRoomReachable() {
 int findExitRoomNumber() {
   for (int i = 0; i < MAX_NUMBER_OF_ITEMS_IN_HOUSE; i++) {
     if (items[i].value == EXIT) {
-      return items[i].roomNumber;
+      return getRoomNumberByCoordinates(items[i].x, items[i].y);
     }
   }
   return 0;
-}
-
-int getRoomNumberByCoordinates(int x, int y) {
 }
 
 void moveMob(Mob *mob) {
