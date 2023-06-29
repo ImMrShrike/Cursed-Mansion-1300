@@ -39,11 +39,11 @@ struct Item {
   char value;
 };
 
-struct Room {
+/*struct Room {
   int floorNumber;
   int roomNumber;
   int adjacent[3];
-};
+};*/
 
 
 
@@ -90,6 +90,7 @@ Rect room[6];
 Player player;
 int menuPosition = 0;
 int xFrame = 0;
+int difficulty = 0;
 
 void printItemInUse(Player player) {
   if (player.itemInUse == SCEPTER) {
@@ -124,28 +125,6 @@ char getSpotValue(int i, int j, int floorNumber) {
   return NO_ITEM;
 }
 
-int areRoomsAdjacent(int room1, int room2) {
-  if (room1 == 0 && (room2 == 1 || room2 == 2)) {
-    return 1;
-  }
-  if (room1 == 1 && (room2 == 0 || room2 == 3)) {
-    return 1;
-  }
-  if (room1 == 2 && (room2 == 0 || room2 == 3 || room2 == 4)) {
-    return 1;
-  }
-  if (room1 == 3 && (room2 == 1 || room2 == 2 || room2 == 5)) {
-    return 1;
-  }
-  if (room1 == 4 && (room2 == 2 || room2 == 5)) {
-    return 1;
-  }
-  if (room1 == 5 && (room2 == 3 || room2 == 4)) {
-    return 1;
-  }
-  return 0;
-}
-
 void setSpotValue(int i, int j, int floorNumber, char value) {
   int found = 0;
   for (int k = 0; k < MAX_NUMBER_OF_ITEMS_IN_HOUSE; k++) {
@@ -161,6 +140,15 @@ void setSpotValue(int i, int j, int floorNumber, char value) {
     items[emptySpace].floorNumber = floorNumber;
     items[emptySpace].value = value;
   }
+}
+
+void getFixedExit() {
+  Item exitDoor;
+  exitDoor.floorNumber = 0;
+  exitDoor.value = EXIT;
+  exitDoor.x = 9;
+  exitDoor.y = 7;
+  items[getFirstEmptyItemSpot()] = exitDoor;
 }
 
 void generateExit() {
@@ -262,7 +250,7 @@ void generateItem(char itemValue) {
 
 
 
-void generateStairs() {
+/*void generateStairs() {
   for (int flr = 0; flr < 3; flr++) {
     //generate stairs up (up to three)
     int loop = random(1, 4);
@@ -288,9 +276,66 @@ void generateStairs() {
       }
     }
   }
+}*/
+
+void getFixedDoors(int difficulty) {
+  if (difficulty == 1) {
+    int matrix[13][3] = { { 2, 5, 0 }, { 4, 7, 0 }, { 7, 10, 0 }, { 4, 3, 1 }, { 7, 5, 1 }, { 2, 10, 1 }, { 7, 10, 1 }, { 4, 3, 2 }, { 4, 7, 2 }, { 2, 10, 2 }, { 2, 5, 3 }, { 4, 7, 3 }, { 7, 10, 3 } };
+    for (int i = 0; i < 13; i++) {
+
+      int spot = getFirstEmptyItemSpot();
+      Item door;
+      door.x = matrix[i][0];
+      door.y = matrix[i][1];
+      door.floorNumber = matrix[i][2];
+      door.value = CLOSED_DOOR;
+      items[getFirstEmptyItemSpot()] = door;
+    }
+
+  } else if (difficulty == 2) {
+    int matrix[14][3] = { { 2, 5, 0 }, { 4, 7, 0 }, { 7, 5, 0 }, { 2, 10, 0 }, { 2, 5, 1 }, { 7, 5, 1 }, { 7, 10, 1 }, { 4, 13, 1 }, { 2, 5, 2 }, { 4, 7, 2 }, { 2, 10, 2 }, { 7, 10, 2 }, { 2, 5, 3 }, { 2, 10, 3 } };
+    for (int i = 0; i < 14; i++) {
+      Item door;
+      door.x = matrix[i][0];
+      door.y = matrix[i][1];
+      door.floorNumber = matrix[i][2];
+      door.value = CLOSED_DOOR;
+      items[getFirstEmptyItemSpot()] = door;
+    }
+  }
 }
 
-void generateDoors() {
+void getFixedStairs(int difficulty) {
+
+
+  if (difficulty == 0 || difficulty == 1) {
+    int stairs[8][3] = { { 2, 0, 0 }, { 7, 15, 0 }, { 7, 0, 1 }, { 0, 7, 1 }, { 2, 15, 1 }, { 2, 0, 2 }, { 9, 7, 2 }, { 7, 15, 2 } };
+    populateStairs(stairs, 8);
+  } else {
+    int stairs[9][3] = { { 2, 0, 0 }, { 0, 7, 0 }, { 2, 15, 0 }, { 7, 0, 1 }, { 9, 7, 1 }, { 7, 15, 1 }, { 2, 0, 2 }, { 0, 7, 2 }, { 2, 15, 2 } };
+    populateStairs(stairs, 9);
+  }
+}
+
+void populateStairs(int stairs[][3], int size) {
+  for (int i = 0; i < size; i++) {
+    Item stairsUp;
+    stairsUp.x = stairs[i][0];
+    stairsUp.y = stairs[i][1];
+    stairsUp.floorNumber = stairs[i][2];
+    stairsUp.value = STAIRS_UP;
+    items[getFirstEmptyItemSpot()] = stairsUp;
+
+    Item stairsDown;
+    stairsDown.x = stairs[i][0];
+    stairsDown.y = stairs[i][1];
+    stairsDown.floorNumber = stairs[i][2] + 1;
+    stairsDown.value = STAIRS_DOWN;
+    items[getFirstEmptyItemSpot()] = stairsDown;
+  }
+}
+
+/*void generateDoors() {
   for (int i = 0; i < MAX_NUMBER_OF_ITEMS_IN_HOUSE; i++) {
     if (items[i].value == CLOSED_DOOR) {
       items[i].value = NO_ITEM;
@@ -315,7 +360,7 @@ void generateDoors() {
       }
     }
   }
-}
+}*/
 
 void placeItemInEmptySpot(int i, int j, int floorNumber, char item, int itemWidth, int itemHeight) {
   int flag = 0;
@@ -342,31 +387,25 @@ void placeItemInEmptySpot(int i, int j, int floorNumber, char item, int itemWidt
 void generateHouse() {
 
   initializeItemArray();
-  //generateStanze();
-  generateExit();
+  getFixedExit();
+  //generateExit();
   generateStartingPoint();
   generateScepter();
   generateLeftUrn();
   generateRightUrn();
   generateMiddleUrn();
-  generateStairs();
+  getFixedStairs(difficulty);
+  //generateStairs();
   generateMobs();
   if (!lights) {
-    do {
+    getFixedDoors(difficulty);
+    /*do {
       generateDoors();
-    } while (!isEveryRoomReachable());
+    } while (!isEveryRoomReachable());*/
 
     generateKey();
   }
 }
-
-/*void generateStanze() {
-  for (int piano = 0; piano < 4; piano++) {
-    for (int stz = 0; stz < 6; stz++) {
-      stanza[stz][piano] = 0;
-    }
-  }
-}*/
 
 int playerAndEnemyInSameRoom(Mob mob) {
   return mob.floorNumber == player.floorNumber && mob.roomNumber == player.roomNumber;
@@ -603,8 +642,10 @@ int checkCollision(int direction) {
 
 void loop() {
 
-  if (!(arduboy.nextFrame()))
+  if (!(arduboy.nextFrame())) {
     return;
+  }
+
 
   arduboy.clear();
   arduboy.pollButtons();
@@ -630,82 +671,71 @@ void loop() {
     Sprites::drawOverwrite(112, 55, startScreen, 5);
 
 
-    arduboy.setCursor(18, 8);
+    arduboy.setCursor(18, 10);
     arduboy.print("Cursed Mansion");
-    arduboy.setCursor(32, 18);
+    arduboy.setCursor(35, 20);
     arduboy.print("+ 1300 +");
+    if (menuPosition == 0) {
+      Sprites::drawOverwrite(16, 40, doorIcon, xFrame);
+    } else {
+      Sprites::drawOverwrite(16, 40, doorIcon, 0);
+    }
+
+    Sprites::drawOverwrite(36, 40, difficultyIcon, difficulty);
+
+    Sprites::drawOverwrite(56, 40, candleIcon, lights);
+
+    Sprites::drawOverwrite(76, 40, gfx, newGfx);
+
+    for (int i = 0; i < numberOfBats; i++) {
+      if (menuPosition == 4) {
+        Sprites::drawOverwrite(96, (40 - (10 * i)), batIcon, xFrame);
+      } else {
+        Sprites::drawOverwrite(96, (40 - (10 * i)), batIcon, 0);
+      }
+    }
 
     if (menuPosition == 0) {
-      Sprites::drawOverwrite(16, 28, batIcon, xFrame);
-    } else {
-      Sprites::drawOverwrite(16, 28, batIcon, 0);
-    }
-    arduboy.setCursor(30, 28);
-    arduboy.print("Bats");
-    arduboy.setCursor(85, 28);
-    arduboy.print(numberOfBats);
-
-    if (menuPosition == 1) {
-      Sprites::drawOverwrite(17, 37, candleIcon, xFrame);
-    } else {
-      Sprites::drawOverwrite(17, 37, candleIcon, 0);
-    }
-    arduboy.setCursor(30, 38);
-    arduboy.print("Lights");
-    arduboy.setCursor(85, 38);
-    if (lights) {
-      arduboy.print("On");
-    } else {
-      arduboy.print("Off");
+      Sprites::drawOverwrite(16, 50, arrow, 0);
+    } else if (menuPosition == 1) {
+      Sprites::drawOverwrite(36, 50, arrow, 0);
+    } else if (menuPosition == 2) {
+      Sprites::drawOverwrite(56, 50, arrow, 0);
+    } else if (menuPosition == 3) {
+      Sprites::drawOverwrite(76, 50, arrow, 0);
+    } else if (menuPosition == 4) {
+      Sprites::drawOverwrite(96, 50, arrow, 0);
     }
 
-    if (menuPosition == 2) {
-      Sprites::drawOverwrite(16, 47, gfx, xFrame);
-    } else {
-      Sprites::drawOverwrite(16, 47, gfx, 0);
+    if (arduboy.justPressed(RIGHT_BUTTON)) {
+      menuPosition = (menuPosition + 1) % 5;
     }
-
-    arduboy.setCursor(30, 48);
-    if (newGfx) {
-      arduboy.print("New Gfx");
-    } else {
-      arduboy.print("Old Gfx");
-    }
-
-    if (menuPosition == 3) {
-      Sprites::drawOverwrite(73, 47, doorIcon, xFrame);
-    } else {
-      Sprites::drawOverwrite(73, 47, doorIcon, 0);
-    }
-    arduboy.setCursor(83, 48);
-    arduboy.print("Play!");
-
-    if (arduboy.justPressed(DOWN_BUTTON)) {
-      menuPosition = (menuPosition + 1) % 4;
-    }
-    if (arduboy.justPressed(UP_BUTTON)) {
+    if (arduboy.justPressed(LEFT_BUTTON)) {
       menuPosition--;
       if (menuPosition < 0) {
-        menuPosition = 3;
+        menuPosition = 4;
       }
     }
 
     if (arduboy.justPressed(A_BUTTON)) {
       if (menuPosition == 0) {
+        newGame();
+        gamePhase = 1;
+      }
+      if (menuPosition == 1) {
+        difficulty = (difficulty + 1) % 3;
+      }
+      if (menuPosition == 2) {
+        lights = (lights + 1) % 2;
+      }
+      if (menuPosition == 3) {
+        newGfx = (newGfx + 1) % 2;
+      }
+      if (menuPosition == 4) {
         numberOfBats = (numberOfBats + 1) % 4;
         if (numberOfBats == 0) {
           numberOfBats++;
         }
-      }
-      if (menuPosition == 1) {
-        lights = (lights + 1) % 2;
-      }
-      if (menuPosition == 2) {
-        newGfx = (newGfx + 1) % 2;
-      }
-      if (menuPosition == 3) {
-        newGame();
-        gamePhase = 1;
       }
     }
   } else if (gamePhase == 1) {
@@ -750,12 +780,12 @@ void loop() {
 
     //DEBUG
     /*arduboy.print(1);*/
-    arduboy.setCursor(30, 10);
-    arduboy.print(mobs[0].roomNumber);
+    //arduboy.setCursor(30, 10);
+    //arduboy.print(mobs[0].roomNumber);
     /*arduboy.setCursor(30,20);
     arduboy.print(items[exitIndex].y);*/
 
-    if (mobs[0].direction == 0) {
+    /*if (mobs[0].direction == 0) {
       arduboy.print('r');
     } else if (mobs[0].direction == 1) {
       arduboy.print('l');
@@ -763,7 +793,7 @@ void loop() {
       arduboy.print('u');
     } else if (mobs[0].direction == 3) {
       arduboy.print('d');
-    }
+    }*/
 
 
 
@@ -780,35 +810,33 @@ void loop() {
 
     for (int i = 0; i < 16; i++) {
       for (int j = 0; j < 10; j++) {
-        if (player.hitBox.y + player.viewportY > (i * 12) - 64 && player.hitBox.y + player.viewportY < (i * 12) + 70 && (lights || player.roomNumber == roomNumberOfCoordinates(i, j) || i == 5 || i == 10 || j == 4 || j == 5)) {
+        if (player.hitBox.y + player.viewportY > (i * 12) - 64 && player.hitBox.y + player.viewportY < (i * 12) + 70) {  //&& ( lights || player.roomNumber == roomNumberOfCoordinates(i, j) || i == 5 || i == 10 || j == 4 || j == 5)
           if (level[i][j] == WALL) {
             if (lights) {
               if (!color) {
-                Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
-                /*if (newGfx) {
+                if (newGfx) {
                   Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
                 } else {
                   Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
-                }*/
+                }
 
               } else {
                 Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);
               }
             } else {
               if (color) {
-                Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
-                /*if (newGfx) {
+                if (newGfx) {
                   Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, floorBrick, player.floorNumber);
                 } else {
                   Sprites::drawSelfMasked(12 * j, 12 * i - player.viewportY, whiteBlock, 0);
-                }*/
+                }
               } else {
                 Sprites::drawPlusMask(12 * j, 12 * i - player.viewportY, blackBlock, 0);
               }
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == EXIT) {
+          } else if (getSpotValue(i, j, player.floorNumber) == EXIT && (lights || player.roomNumber == roomNumberOfCoordinates(i, j))) {
             Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, exitBlock, 0);
-          } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_UP) {
+          } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_UP && (lights || player.roomNumber == roomNumberOfCoordinates(i, j))) {
             if (i == 0) {
               Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 1);
             }
@@ -821,7 +849,7 @@ void loop() {
             if (j == 9) {
               Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 2);
             }
-          } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_DOWN) {
+          } else if (getSpotValue(i, j, player.floorNumber) == STAIRS_DOWN && (lights || player.roomNumber == roomNumberOfCoordinates(i, j))) {
             if (i == 0) {
               Sprites::drawOverwrite(12 * j, 12 * i - player.viewportY, stairs, 0);
             }
@@ -1202,26 +1230,26 @@ void loop() {
   }
   //game phase 2
   else if (gamePhase == 2) {
-    arduboy.setCursor(0, 10);
+   /* arduboy.setCursor(0, 10);
     arduboy.print("You successfully");
     arduboy.setCursor(10, 20);
-    arduboy.print("escaped the house!");
-    arduboy.setCursor(0, 35);
-    arduboy.print("your time is: ");
+    arduboy.print("escaped!");*/
+    arduboy.setCursor(20, 35);
+    arduboy.print("Your time is: ");
     arduboy.print((endTime - initTime) / 1000);
-    arduboy.setCursor(5, 50);
-    arduboy.print("Press A to continue!");
+    /*arduboy.setCursor(5, 50);
+    arduboy.print("Press A to continue!");*/
 
     if (arduboy.justPressed(A_BUTTON)) {
       gamePhase = 0;
     }
   } else if (gamePhase == 3) {
-    arduboy.setCursor(0, 20);
-    arduboy.print("You perished in");
-    arduboy.setCursor(15, 30);
+    arduboy.setCursor(20, 35);
+    arduboy.print("You perished!");
+    /*arduboy.setCursor(15, 30);
     arduboy.print("search of the urn!");
-    arduboy.setCursor(5, 50);
-    arduboy.print("press A to continue!");
+    /*arduboy.setCursor(5, 50);
+    arduboy.print("press A to continue!");*/
     if (arduboy.justPressed(A_BUTTON)) {
       gamePhase = 0;
     }
@@ -1350,7 +1378,7 @@ void getNextDirection(Mob *mob) {
   mob->direction = rnd;
 }
 
-int isEveryRoomReachable() {
+/*int isEveryRoomReachable() {
   Room reachableRoom[24];
   for (int i = 0; i < 24; i++) {
     reachableRoom[i].floorNumber = -1;
@@ -1410,7 +1438,7 @@ int isEveryRoomReachable() {
       int roomNumber = getRoomNumberByCoordinates(items[j].x, items[j].y);
       if (((items[j].value == STAIRS_UP && items[j].floorNumber + 1 == reachableRoom[i].floorNumber) || (items[j].value == STAIRS_DOWN && items[j].floorNumber - 1 == reachableRoom[i].floorNumber))
           && reachableRoom[i].roomNumber == roomNumber) {
-        int found = 0;
+        /*int found = 0;
         int index = -1;
         for (int k = 0; k < 24; k++) {
           if (reachableRoom[k].roomNumber == reachableRoom[i].roomNumber && reachableRoom[k].floorNumber == reachableRoom[i].floorNumber) {
@@ -1450,9 +1478,9 @@ int isEveryRoomReachable() {
     return 1;
   }
   return 0;
-}
+}*/
 
-int *roomsDividedByDoor(int x, int y) {
+/*int *roomsDividedByDoor(int x, int y) {
   int output[2];
   if (x == 4 && y == 3) {
     output[0] = 0;
@@ -1483,9 +1511,9 @@ int *roomsDividedByDoor(int x, int y) {
     output[1] = 5;
   }
   return output;
-}
+}*/
 
-int getRoomNumberByCoordinates(int x, int y) {
+/*int getRoomNumberByCoordinates(int x, int y) {
   if (x == 0 && y == 2) {
     return 0;
   }
@@ -1514,7 +1542,7 @@ int findExitRoomNumber() {
     }
   }
   return 0;
-}
+}*/
 
 void moveMob(Mob *mob) {
   //mob->roomNumber = mobRoomNumber(*mob);
