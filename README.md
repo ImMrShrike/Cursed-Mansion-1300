@@ -1,7 +1,7 @@
 # Cursed Mansion 1300
 A recreation of the classic game Haunted House for the Arduboy
 
-![cursedMansion1300](https://github.com/ImMrShrike/CursedMansion1300/assets/34406881/79b7e50f-c6fb-4842-8c5f-4af84c85ac88)
+![cursedMansion1300](https://github.com/ImMrShrike/Cursed-Mansion-1300/assets/34406881/3c664c55-3183-446e-ba7d-549f407b0701)
 
 About the game:
 
